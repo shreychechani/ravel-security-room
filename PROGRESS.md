@@ -29,7 +29,7 @@
 **Next**
 - Phase 3
 
-## Phase 3 — Switch up and running (Nov 4) ⏳ in progress
+## Phase 3 — Switch up and running (Nov 4) ✅ acceptance met; template step (6) waits for Opus
 
 **Done**
 - Docker Desktop 29.9.2 installed, daemon running. Note: `docker` is on PATH only in login shells
@@ -51,8 +51,19 @@
   Console sidecars) 401, so only the `api` port is the bridge. 8000/3000 are for the docker-compose self-host.
 - The server runs natively (`switch_core` 0.31.0 + Postgres); only Mattermost is a Docker container.
 
+- Step 5 done: agent `sec-triager` (Claude Code) created, Mattermost channel `security-intake` made, bot
+  `sec-triager` added (that creates the room on Mattermost). `@sec-triager hello, which folder are you working in?`
+  → replied after ~15 s ("Starting a session to handle this"). **Phase 3 "done when" is met.**
+- Mattermost went down once because Docker Desktop was quit (container exited 0). Fixed with
+  `docker start switchdash-local-mattermost-mattermost-1`; it keeps port 52121 (pinned in
+  `native/mattermost-compose.yml`). Docker Desktop must stay open for the whole demo.
+
 **Broken / blocked**
-- Nothing blocking. The 8080 move (C2) is still harmless, but its "Switch uses 8000" reason applies only to the
+- sec-triager's working directory is **not the repo**: it reported
+  `/Users/shreychechani/.switch/agents/localhost-52120/sec-triager` (empty, not a git repo, created when the
+  agent was added). Either the Directory field was not set or the managed-agent move dropped it. Not fixed on
+  purpose: the right directory is a design decision (see Open 6).
+- Nothing else blocking. The 8080 move (C2) is still harmless, but its "Switch uses 8000" reason applies only to the
   docker-compose self-host.
 
 **Next ([SHREY], click-by-click given in chat)**
@@ -74,3 +85,14 @@
    adapter must take `SWITCH_URL` from `.env`, and the README quickstart must tell judges to copy the `api`
    port from `ports.json`. Unknown: do the ports stay the same after the server restarts or the laptop reboots?
    Decide whether `config.py` should fall back to reading `ports.json` when `SWITCH_URL` is unset.
+6. **Agent working directory.** Console's managed agents use `~/.switch/agents/<server-host>-<api-port>/<name>`
+   unless Directory points elsewhere; a managed agent's Directory is editable on its page (full path;
+   `Choose…` only on this computer), and the agent restarts when it changes
+   (`/switch-rooms/getting-started/agent-settings#rename-or-move-the-agent`). Two problems to design around:
+   (a) `sec-fixer` needs a real git checkout to branch, patch, run pytest and merge; (b) docs say standing
+   instructions in the working directory "become its default behavior", and this repo's `CLAUDE.md` is the
+   *builder's* rulebook ("stop after each phase, wait for Shrey"). Claude Code also reads CLAUDE.md in parent
+   directories. Decide: separate clone/worktree for the agents without `CLAUDE.md`, or not. Note the default
+   directory name contains the api port (`localhost-52120`), so it may change if ports change (Open 5).
+7. Phase 3 template step needs the checks in Open 1–6 answered before `switch/security-room.template.yaml`
+   is rewritten.
