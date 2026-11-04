@@ -1,7 +1,8 @@
 # CLAUDE.md — Ravel Security Room (Flip the Switch hackathon)
 
-Read this whole file before doing anything. It is the single source of truth for
-what we are building, how, and in what order. Work phase by phase. At the end of
+Read this whole file before doing anything, then read `PLAN.md`. This file says what we
+are building and the rules; `PLAN.md` has the task-by-task plan, verified Switch facts, and
+corrections to this file (where they disagree, `PLAN.md` wins). Work phase by phase. At the end of
 each phase, stop, report results, and wait for Shrey to say "continue".
 
 ---
@@ -14,7 +15,7 @@ each phase, stop, report results, and wait for Shrey to say "continue".
 - **Owner:** Shrey (human). You are Claude Code, the main builder.
 - **Switch:** open-source infrastructure (github.com/sandbox-quantum/switch) that puts AI
   agents into team chat. Each chat channel (Slack, Discord, Telegram, Mattermost) becomes a
-  "room". Agents connect through the **Switch Agent Protocol** (server-sent events in, HTTP out).
+  "room". Agents connect through the **Switch Agent Protocol** (WebSocket in, HTTP out; SSE is deprecated).
   **Switch Console** is the desktop app that runs agents and a local server in Docker.
 - **Switch docs:** available to you through the `switch-docs` MCP server
   (`https://docs.switchagents.ai/mcp`, HTTP transport). ALWAYS use it for any Switch fact: template fields,
@@ -50,7 +51,7 @@ Switch Core: rooms, roles, tasks, approval gate
   ├─ #security-intake   every finding / PR lands here
   ├─ #fix-<name>        one room per real finding (fixer + ravel + security owner)
   └─ #security-ledger   one line per decision
-        │  Agent Bridge (SSE in, HTTP out)
+        │  Agent Bridge (WebSocket in, HTTP out)
 Agents
   ├─ sec-triager  (Claude Code or OpenCode via Switch Console)
   ├─ ravel        (custom agent: ravel_adapter/ + Shrey's Ravel CLI)
@@ -102,7 +103,7 @@ sec-fixer agent in the demo. Keep exactly 3 scanner findings on `main`.
 - Never commit secrets. `.env` stays in `.gitignore`. Use `.env.example` for placeholders.
 - Small commits with clear messages, at least one per working session.
 - Python 3.11+, standard library + `requirements.txt` only, unless Shrey approves more.
-- macOS: never use port 5000 (AirPlay uses it). The demo app runs on 8000.
+- macOS: never use port 5000 (AirPlay uses it). Switch's local API uses 8000 and its Gateway 3000, so the demo app runs on **8080**.
 - Keep code simple and readable; judges must understand it quickly.
 - After each phase, update `PROGRESS.md` (create it) with: done, broken, next.
 
@@ -121,7 +122,7 @@ When you reach one of these, print exact click-by-click instructions for Shrey, 
 - Check: `git`, `python3 --version` (3.11+), `docker --version`, `gh auth status`.
 - Create `.venv`, install `requirements.txt`.
 - Run `./scripts/scan.sh` → exactly 3 findings. Run `pytest demo-app/tests -q` → 1 pass, 1 fail.
-- Run the app on port 8000 and curl `/api/search?q=almo`.
+- Run the app on port 8080 and curl `/api/search?q=almo`.
 - **Done when:** all of the above pass. Report output.
 
 ### Phase 2 — GitHub (Day 1)
@@ -150,9 +151,9 @@ When you reach one of these, print exact click-by-click instructions for Shrey, 
 
 ### Phase 5 — Ravel adapter, protocol side (Day 2)
 - Read the Agent Protocol docs via switch-docs: how a custom agent registers, authenticates,
-  receives events (SSE), and sends messages (HTTP), plus how to attach knowledge to a room.
+  receives events (WebSocket), and sends messages (HTTP), plus how to attach knowledge to a room.
 - Replace every `TODO` in `ravel_adapter/adapter.py` with the real protocol. Add reconnect
-  on dropped SSE and clear logs.
+  on a dropped WebSocket and clear logs.
 - Add `ravel_adapter/README.md` explaining how it works in plain language.
 - **Done when:** in Mattermost, `@ravel check app.py:search` gets Ravel's answer.
 
