@@ -40,12 +40,24 @@
 - `requirements.txt` pinned to the installed versions; `scan.sh` uses `.venv/bin/bandit` and fails
   loudly instead of printing stale `findings.json`; `.gitignore` covers `.ravel_state.json`, `.ravel-worktrees/`.
 
+- Step 2 done by Shrey: Console installed, local server running ("Running locally"), signed in as Admin,
+  switch-buddy powered by Claude Code.
+- Step 4 done, **with a correction to PLAN.md**: the Console-run local server does **not** use 8000/3000.
+  Console picks free ports and writes them to
+  `~/Library/Application Support/switchdash/local-switch-server/ports.json`. This run:
+  `{"gateway": 52119, "api": 52120, "mattermost": 52121, "postgres": 52122}`.
+  `curl http://127.0.0.1:52120/health` → `{"status":"ok"}` (200). So **`SWITCH_URL=http://127.0.0.1:52120`**.
+  `/health` on the Gateway port gives 404, and on the agent-controller/agent-host ports (separate
+  Console sidecars) 401, so only the `api` port is the bridge. 8000/3000 are for the docker-compose self-host.
+- The server runs natively (`switch_core` 0.31.0 + Postgres); only Mattermost is a Docker container.
+
 **Broken / blocked**
-- Step 4 (`curl localhost:8000/health`): nothing listens on 8000 yet. Needs Shrey's Console server (step 2).
+- Nothing blocking. The 8080 move (C2) is still harmless, but its "Switch uses 8000" reason applies only to the
+  docker-compose self-host.
 
 **Next ([SHREY], click-by-click given in chat)**
-- Steps 2 and 5: install Console, start the local server, sign in to Mattermost, add `sec-triager`.
-- Then `curl http://localhost:8000/health` to confirm the bridge base URL (step 4).
+- Step 5: sign in to Mattermost (Home → Messaging apps → Sign-in details…), add `sec-triager` in Your Agents,
+  mention it in a Mattermost channel.
 - Step 6 is `[OPUS]`: finish the template (§5) and agent instructions (§6).
 
 **Open (for an Opus session; found in the docs, not in PLAN.md)**
@@ -58,3 +70,7 @@
 3. New agents created in Console default to **"Me and my agents"** and start with **Auto mode on, Bypass
    permissions off**. Decide Auto mode / Bypass for `sec-fixer` (it merges; bypass would weaken the gate).
 4. Docker is now optional for the server, but the **bundled Mattermost needs it**; keep Docker for the dev chat.
+5. **Ports are random per Console install** (see Phase 3 Done). PLAN.md §3/§4.1 assume `localhost:8000`; the
+   adapter must take `SWITCH_URL` from `.env`, and the README quickstart must tell judges to copy the `api`
+   port from `ports.json`. Unknown: do the ports stay the same after the server restarts or the laptop reboots?
+   Decide whether `config.py` should fall back to reading `ports.json` when `SWITCH_URL` is unset.
