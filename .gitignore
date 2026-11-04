@@ -4,4 +4,6 @@ __pycache__/
 *.db
 findings.json
 .env
+.ravel_state.json
+.ravel-worktrees/
 .DS_Store
