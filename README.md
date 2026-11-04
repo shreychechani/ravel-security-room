@@ -23,5 +23,5 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ./scripts/scan.sh                 # expect 3 findings
 pytest demo-app/tests -q          # expect 1 failing test until the SQL injection is fixed
-cd demo-app && python app.py      # http://127.0.0.1:8000/api/search?q=almo
+cd demo-app && python app.py      # http://127.0.0.1:8080/api/search?q=almo
 ```

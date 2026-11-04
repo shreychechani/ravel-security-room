@@ -50,5 +50,6 @@ def checkout_view():
 
 if __name__ == "__main__":
     init_db()
-    # Port 8000, not Flask's default 5000 (macOS AirPlay Receiver uses 5000)
-    app.run(port=8000)
+    # Port 8080: Flask's default 5000 is taken by macOS AirPlay Receiver, and
+    # Switch's local server uses 8000 (API) and 3000 (Gateway).
+    app.run(port=int(os.environ.get("PORT", 8080)))
