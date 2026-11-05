@@ -23,9 +23,9 @@ Read in this order:
 | --- | --- |
 | 1 Environment | ✅ Scan = 3 findings, pytest 1 pass / 1 fail (intended) |
 | 2 GitHub | ✅ https://github.com/shreychechani/ravel-security-room (MIT) |
-| 3 Switch running | ✅ Local server + Mattermost up, `sec-triager` answers in `#security-intake`. Template + agent instructions written (T6); import test waits for T3 (registering ravel + sec-scanner) |
+| 3 Switch running | ✅ Local server + Mattermost up, `sec-triager` answers in `#security-intake`. Template + agent instructions written (T6); import test is next |
 | 4 Ravel side of adapter | ✅ T1 + T1b done: all commands answer correctly with no Switch. Tests (T2) open |
-| 5 Switch protocol side | ⬜ (T3) |
+| 5 Switch protocol side | ✅ T3 done: `ravel` and `sec-scanner` registered; `check`, `who calls`, `attach wiki` answered live in Mattermost (~1.5 s). See `ravel_adapter/README.md` |
 | 6 Full workflow | ⬜ (T4, T5, T6, then dry runs) |
 | 7 Ask Ravel + Discord | ⬜ |
 | 8 README, blog, video | ⬜ (T8) |
@@ -49,9 +49,11 @@ uv run --project ../Ravel ravel scan demo-app --limit 0 --json /tmp/scan.json
                                         # expect B608 reachable; B307, B506 unreachable
 ```
 
-**Only for live testing in chat (T3 live test, T5, T6, Phase 6):** install Docker Desktop and
+**Only for live testing in chat (T5, T6, Phase 6):** install Docker Desktop and
 Switch Console, then choose *Run a server on this computer*. A local server is single-user,
-so each tester runs their own. See ARCHITECTURE §8 for ports.
+so each tester runs their own. See ARCHITECTURE §8 for ports. To run Ravel in chat
+(registration key, registering agents, starting it), follow `ravel_adapter/README.md` → *Run it*.
+Console 0.40.1 has no Gateway page, so the key comes from `python -m ravel_adapter.registration_key`.
 
 ## 3. Open tasks
 
@@ -63,7 +65,7 @@ Claim a task by telling the project owner and putting your name in the **Who** c
 | **T1** ✅ | Ravel side of the adapter: `ravel_adapter/config.py` (stdlib `.env` reader), `ravel_adapter/ravel.py` with `check`, `who calls`, `verify`, `wiki`, `help`; chat formatting per the **reply contract** (replies start with `@<asker>`); ignore `tests/` findings; read `@app.route` for the URL | PLAN §4.2, §4.4; ARCHITECTURE §6 (reply contract), D2, D3, D6 | No | | `python ravel_adapter/adapter.py "@ravel check app.py:search"` (and the other 4 commands in PLAN §7 Phase 4) print correct answers |
 | **T1b** ✅ | Wiki generator: build `ravel_adapter/wiki_cache/<module>.md` from `scan.json` (functions, routes, callers, callees, findings) and commit the pages | ARCHITECTURE D3 | No | | `wiki app`, `wiki payments` print useful pages instantly |
 | **T2** | `ravel_adapter/tests/test_handle.py`: parsing, mention stripping, unknown → help; mock `subprocess.run` | PLAN §4.5 | No | | `pytest ravel_adapter/tests -q` green |
-| **T3** | Protocol side: `register.py`, `switch_client.py` (WebSocket loop, pong, reconnect, cursor), `tests/test_switch_client.py` with fake frames | PLAN §3, §4.3, §4.5 | Unit tests: no. Live test: yes | | Fake-frame tests green; then `@ravel check app.py:search` answered in Mattermost |
+| **T3** ✅ | Protocol side: `register.py`, `switch_client.py` (WebSocket loop, pong, reconnect, cursor), `tests/test_switch_client.py` with fake frames | PLAN §3, §4.3, §4.5 | Unit tests: no. Live test: yes | | Fake-frame tests green; then `@ravel check app.py:search` answered in Mattermost |
 | **T4** | `scripts/reset_demo.sh` + tag `demo-base` | PLAN §7 Phase 6.3 | No | | Running it twice leaves `main` with 3 findings, no `fix/*` branches. **Ask the owner before the first run (`reset --hard`)** |
 | **T5** | `scripts/post_findings.py`: post the 3 findings as sec-scanner into `#security-intake` | PLAN §7 Phase 6.2 | Yes | | 3 messages appear, ~2 s apart |
 | **T6** | ✅ Written: `switch/security-room.template.yaml` (both agents' instructions, approval gate, 2 rooms). **Left:** import test | ARCHITECTURE §5, D8–D12; §4 below | Import: yes | Owner | Template imports and runs without errors (after T3 registers ravel + sec-scanner) |
@@ -74,9 +76,9 @@ Claim a task by telling the project owner and putting your name in the **Who** c
 Dependencies: T1 → T2 and T1b. T1 + T3 → live `@ravel`. T3 (register) → T5 and T6 import.
 T1–T6 → Phase 6 dry runs (3 clean runs in a row from `reset_demo.sh`).
 
-**Can run in parallel right now with no Switch:** T1, T1b, T2, T3 (unit part), T4, T8.
+**Can run in parallel right now with no Switch:** T2, T4, T8.
 
-## 4. Import the template (after T3 has registered `ravel` and `sec-scanner`)
+## 4. Import the template (`ravel` and `sec-scanner` must be registered, and `adapter.py` running)
 
 1. **Remove the Phase 3 test setup** so names don't clash: in Switch Console, delete the
    hand-made `sec-triager` agent (Your Agents → sec-triager) and the test room
