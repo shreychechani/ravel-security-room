@@ -6,6 +6,9 @@ vulnerabilities from noise, fix them, prove the fix works, and wait for a human
 for the Flip the Switch hackathon.
 
 > Work in progress. Full README (setup, demo video, architecture) comes on Day 4.
+>
+> **Teammates and their agents: start at [`docs/HANDOFF.md`](docs/HANDOFF.md)** (status, setup,
+> open tasks), then [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (how it works and why).
 
 ## Repo layout
 

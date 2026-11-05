@@ -1,5 +1,14 @@
 # CLAUDE.md — Ravel Security Room (Flip the Switch hackathon)
 
+> **If you are a Switch room agent** (sec-triager, sec-fixer, or any agent started by Switch
+> Console for a chat room): **ignore this file.** It is the rulebook for the people and AI
+> assistants *building* the project. Your instructions come from Switch.
+>
+> **If you are a teammate or a teammate's AI agent:** start with
+> [`docs/HANDOFF.md`](docs/HANDOFF.md) (status, setup, open tasks), then
+> [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). "Shrey" below is the project owner; when
+> a rule says "ask Shrey", ask your own human, who coordinates with Shrey.
+
 Read this whole file before doing anything, then read `PLAN.md`. This file says what we
 are building and the rules; `PLAN.md` has the task-by-task plan, verified Switch facts, and
 corrections to this file (where they disagree, `PLAN.md` wins). Work phase by phase. At the end of

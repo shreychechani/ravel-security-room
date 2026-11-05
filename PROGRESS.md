@@ -96,3 +96,28 @@
    directory name contains the api port (`localhost-52120`), so it may change if ports change (Open 5).
 7. Phase 3 template step needs the checks in Open 1–6 answered before `switch/security-room.template.yaml`
    is rewritten.
+
+## Phase 4 — Ravel side (Nov 5) 🟡 verified Ravel, code not started
+
+**Done**
+- Read `github.com/shreychechani/Ravel` (public; phases 0–4 built). Installed it with `uv sync` in a
+  scratch clone and ran it on `demo-app` (< 1 s):
+  B608 `search()` **reachable** (path `search_view → search`), B307 and B506 **unreachable**, plus 2× B101
+  (`assert` in tests, unreachable; the adapter will ignore `tests/`).
+- `who calls process_payment` is answerable from `graph_view.edges` → `checkout_view`, `retry_job`.
+- Fix proof tested on a patched scratch copy (parameterized query): B608 gone, 0 reachable, pytest 2/2.
+  `main` untouched.
+- Decisions (Opus), recorded in `docs/ARCHITECTURE.md` §7: D2 verify rule, D3 graph-built wiki
+  (`ravel summarize` without an LLM key returns placeholder text), D4 Ravel stays a separate repo via `RAVEL_DIR`.
+- Team handoff: `docs/HANDOFF.md` (status, setup, task board T1–T9, open questions, rules),
+  `docs/ARCHITECTURE.md`, `AGENTS.md`; pointer notes at the top of `CLAUDE.md` and `README.md`.
+  `CLAUDE.md`/`AGENTS.md` tell Switch room agents to ignore the builder rules (most of Open 6).
+- `.env.example` rewritten: `SWITCH_URL` + registration/agent keys + `RAVEL_DIR`; removed the
+  made-up `RAVEL_*_CMD` lines (those Ravel commands don't exist).
+
+**Broken / missing**
+- Ravel has no `LICENSE` file (pyproject says MIT); needed so judges can use it (T9, Shrey).
+- Ravel's entry points don't include the route URL; the adapter reads `@app.route` itself.
+
+**Next**
+- T1/T1b/T2 (adapter Ravel side, wiki cache, tests). Can run in parallel with T3 unit part, T4, T8.

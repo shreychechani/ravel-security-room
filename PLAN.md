@@ -26,8 +26,14 @@ every correction).
 | --- | --- |
 | 1 Environment | ✅ Done (Python 3.14, venv, scan = 3 findings, pytest 1 pass / 1 fail, app ok) |
 | 2 GitHub | ✅ Done: https://github.com/shreychechani/ravel-security-room (public, MIT) |
-| 3 Switch up | ⏳ Blocked on Docker Desktop install `[SHREY]` |
-| 4–8 | Not started |
+| 3 Switch up | ✅ Server + Mattermost up, sec-triager replies. Template/instructions (step 6) still open |
+| 4 Ravel side | 🟡 Ravel verified on demo-app (Nov 5); decisions D2–D4 in `docs/ARCHITECTURE.md` §7. Code not started |
+| 5–8 | Not started |
+
+**Nov 5 update (Opus):** the live task board is now `docs/HANDOFF.md` §3 (tasks T1–T9, for
+teammates too). Where this file and `docs/ARCHITECTURE.md` §6–§8 disagree, ARCHITECTURE wins:
+real Ravel commands (`ravel scan --json`, no `reach`/`wiki`/`callers` commands), random Switch
+ports (not 8000/3000), the verify rule (D2) and the graph-built wiki (D3).
 
 ## 2. Corrections to CLAUDE.md (verified in the docs)
 
