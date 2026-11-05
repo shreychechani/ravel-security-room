@@ -14,7 +14,30 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
     git checkout main
 fi
 
-# 2. Clean up any temporary git worktrees left by verify
+# 2. Reset main to demo-base tag
+TAG_NAME="demo-base"
+if ! git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+    echo "Error: Tag '$TAG_NAME' does not exist." >&2
+    echo "Create it on the baseline 3-finding commit with: git tag demo-base" >&2
+    exit 1
+fi
+
+echo "Resetting main to $TAG_NAME..."
+git reset --hard "$TAG_NAME"
+
+# 3. Clean up any temporary git worktrees left by verify
 echo "Pruning temporary worktrees..."
 git worktree prune
 rm -rf .ravel-worktrees
+
+# 4. Delete all local fix/* branches
+echo "Cleaning up local fix/* branches..."
+FIX_BRANCHES=$(git for-each-ref --format='%(refname:short)' refs/heads/fix/ || true)
+if [ -n "$FIX_BRANCHES" ]; then
+    for branch in $FIX_BRANCHES; do
+        echo "Deleting branch $branch..."
+        git branch -D "$branch"
+    done
+else
+    echo "No local fix/* branches found."
+fi
