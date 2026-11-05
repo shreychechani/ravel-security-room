@@ -179,6 +179,10 @@ Load `.env` with a 10-line stdlib parser in `ravel_adapter/config.py` (no python
 
 ## 5. Switch template (Phase 3) `[OPUS]` review, `[SONNET]` edit
 
+> **Done Nov 5 (T6).** The real template, with final instructions for both agents, is
+> `switch/security-room.template.yaml`; the reasons are `docs/ARCHITECTURE.md` §5 and D8–D12.
+> The draft below is kept for history only.
+
 Rewrite `switch/security-room.template.yaml` as a **version 1 group template**. This is a
 draft; validate it in Console (it shows warnings while typing) and against TEMPLATES.md:
 

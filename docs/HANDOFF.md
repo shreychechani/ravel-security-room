@@ -23,7 +23,7 @@ Read in this order:
 | --- | --- |
 | 1 Environment | ✅ Scan = 3 findings, pytest 1 pass / 1 fail (intended) |
 | 2 GitHub | ✅ https://github.com/shreychechani/ravel-security-room (MIT) |
-| 3 Switch running | ✅ Local server + Mattermost up, `sec-triager` answers in `#security-intake`. Template + agent instructions **not written yet** (T6) |
+| 3 Switch running | ✅ Local server + Mattermost up, `sec-triager` answers in `#security-intake`. Template + agent instructions written (T6); import test waits for T3 (registering ravel + sec-scanner) |
 | 4 Ravel side of adapter | 🟡 Ravel verified against demo-app (ARCHITECTURE §6). Code not written (T1, T2) |
 | 5 Switch protocol side | ⬜ (T3) |
 | 6 Full workflow | ⬜ (T4, T5, T6, then dry runs) |
@@ -60,13 +60,13 @@ Claim a task by telling the project owner and putting your name in the **Who** c
 
 | ID | Task | Spec | Switch? | Who | Done when |
 | --- | --- | --- | --- | --- | --- |
-| **T1** | Ravel side of the adapter: `ravel_adapter/config.py` (stdlib `.env` reader), `ravel_adapter/ravel.py` with `check`, `who calls`, `verify`, `wiki`, `help`; chat formatting; ignore `tests/` findings; read `@app.route` for the URL | PLAN §4.2, §4.4; ARCHITECTURE §6, D2, D3, D6 | No | | `python ravel_adapter/adapter.py "@ravel check app.py:search"` (and the other 4 commands in PLAN §7 Phase 4) print correct answers |
+| **T1** | Ravel side of the adapter: `ravel_adapter/config.py` (stdlib `.env` reader), `ravel_adapter/ravel.py` with `check`, `who calls`, `verify`, `wiki`, `help`; chat formatting per the **reply contract** (replies start with `@<asker>`); ignore `tests/` findings; read `@app.route` for the URL | PLAN §4.2, §4.4; ARCHITECTURE §6 (reply contract), D2, D3, D6 | No | | `python ravel_adapter/adapter.py "@ravel check app.py:search"` (and the other 4 commands in PLAN §7 Phase 4) print correct answers |
 | **T1b** | Wiki generator: build `ravel_adapter/wiki_cache/<module>.md` from `scan.json` (functions, routes, callers, callees, findings) and commit the pages | ARCHITECTURE D3 | No | | `wiki app`, `wiki payments` print useful pages instantly |
 | **T2** | `ravel_adapter/tests/test_handle.py`: parsing, mention stripping, unknown → help; mock `subprocess.run` | PLAN §4.5 | No | | `pytest ravel_adapter/tests -q` green |
 | **T3** | Protocol side: `register.py`, `switch_client.py` (WebSocket loop, pong, reconnect, cursor), `tests/test_switch_client.py` with fake frames | PLAN §3, §4.3, §4.5 | Unit tests: no. Live test: yes | | Fake-frame tests green; then `@ravel check app.py:search` answered in Mattermost |
 | **T4** | `scripts/reset_demo.sh` + tag `demo-base` | PLAN §7 Phase 6.3 | No | | Running it twice leaves `main` with 3 findings, no `fix/*` branches. **Ask the owner before the first run (`reset --hard`)** |
 | **T5** | `scripts/post_findings.py`: post the 3 findings as sec-scanner into `#security-intake` | PLAN §7 Phase 6.2 | Yes | | 3 messages appear, ~2 s apart |
-| **T6** | Switch template + final instructions for sec-triager and sec-fixer (approval gate) | PLAN §5, §6; ARCHITECTURE §5; Q1–Q3 below | Writing: no. Import test: yes | Opus session | Template imports in Console without errors |
+| **T6** | ✅ Written: `switch/security-room.template.yaml` (both agents' instructions, approval gate, 2 rooms). **Left:** import test | ARCHITECTURE §5, D8–D12; §4 below | Import: yes | Owner | Template imports and runs without errors (after T3 registers ravel + sec-scanner) |
 | **T7** | Connect Discord, run the flow there | PLAN §7 Phase 7 | Yes | Owner | Flow works in Discord |
 | **T8** | Drafts: `docs/BLOG.md`, `docs/VIDEO_SCRIPT.md`, README "How Switch is used" | CLAUDE.md Phase 8 | No | | Drafts reviewed by the owner |
 | **T9** | Add an MIT `LICENSE` file to the Ravel repo (pyproject says MIT, the file is missing) | — | No | Owner | File on GitHub |
@@ -76,20 +76,31 @@ T1–T6 → Phase 6 dry runs (3 clean runs in a row from `reset_demo.sh`).
 
 **Can run in parallel right now with no Switch:** T1, T1b, T2, T3 (unit part), T4, T8.
 
-## 4. Open questions (decide in T6)
+## 4. Import the template (after T3 has registered `ravel` and `sec-scanner`)
 
-- **Q1. sec-fixer's working directory.** Console agents default to an empty folder
-  (`~/.switch/agents/...`). sec-fixer needs a real git checkout. If it's this repo, Claude Code
-  also loads `CLAUDE.md`, the *builder's* rulebook. `CLAUDE.md` now starts with a note telling
-  room agents to ignore it, so pointing Directory at the repo is likely fine. Confirm in a dry run.
-- **Q2. Addressing for sec-fixer:** default "Me and my agents" vs "Custom rules" (name the owner
-  plus sec-triager only). Does the template YAML support custom rules?
-- **Q3. Auto mode / Bypass permissions for sec-fixer.** It runs git and pytest. Bypass would
-  weaken the gate story; Auto mode may still prompt mid-demo.
+1. **Remove the Phase 3 test setup** so names don't clash: in Switch Console, delete the
+   hand-made `sec-triager` agent (Your Agents → sec-triager) and the test room
+   `security-intake` (archive its channel when asked).
+2. Console → **Templates** → **Import template** → paste `switch/security-room.template.yaml`.
+   Fix any warning it shows, then **Use**.
+3. Fill in: **Security owner** = your chat username; **Folder** = full path of your
+   ravel-security-room clone. Leave the rest. Select **Create all**.
+4. Expect: `#security-intake` (with sec-triager, ravel, sec-scanner, you, a
+   `triage-playbook` room document) and `#security-ledger`. sec-triager answers the kickoff.
+
+## 5. Open questions
+
+Decided in T6 (see ARCHITECTURE D8–D12): sec-fixer works in the repo clone and sec-triager
+in its own empty folder; sec-fixer addressing `owner-agents` (custom rules can't be written in
+a template); Auto mode on, Bypass off.
+
 - **Q4. Do Console's random ports survive a server restart / reboot?** If not, `SWITCH_URL`
   in `.env` must be updated after restarts (or `config.py` reads `ports.json`).
+- **Q5. Watch in the dry runs:** does Auto mode stop sec-fixer with permission prompts for
+  `git`/`pytest`? (If yes: a narrow allowlist, never Bypass.) Can sec-triager invite agents and
+  add users to a room it created? Does sec-triager reliably wait for ravel's reply?
 
-## 5. Rules (everyone, humans and agents)
+## 6. Rules (everyone, humans and agents)
 
 - **Never fix finding 1 (SQL injection) on `main`.** The fix happens live, by sec-fixer, in the demo.
   `main` must always scan to exactly 3 findings (B608, B307, B506).

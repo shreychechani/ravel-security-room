@@ -88,17 +88,28 @@ On Mattermost, adding an agent's bot to a channel is what creates the room.
 
 The gate is the core claim of the project, so it's layered:
 
-1. **Switch addressing:** sec-fixer accepts instructions only from its owner (the
-   security owner) and the owner's agents. Anyone else who types "approved" gets a
-   **visible refusal from Switch** before the agent ever sees it.
-2. **Agent instructions:** sec-fixer merges only when a *human* participant says exactly
-   `approved`. Anything else → no merge, ask what to change.
+1. **Switch addressing:** sec-fixer has `addressing: owner-agents`, so it accepts
+   messages only from its owner (the person who ran the template, the security owner)
+   and the owner's agents (sec-triager, ravel). Anyone else who types
+   `@sec-fixer approved` gets a **visible refusal from Switch** before the agent sees it.
+2. **Agent instructions:** sec-fixer merges only when the security owner's *human*
+   account (named in the template's `security_owner` field) sends exactly
+   `@sec-fixer approved` after sec-fixer asked. Anything else ("ok", "looks good"), or
+   "approved" from another agent, → no merge.
 3. **Proof before asking:** sec-fixer may ask for approval only after `pytest` passes and
    ravel says `FIX VERIFIED`.
 
+Layer 1 stops other people; layer 2 stops the owner's own agents (sec-triager could
+technically address sec-fixer). sec-fixer also runs with Auto mode on and Bypass
+permissions **off**, so risky shell actions still ask a person.
+
 Switch room *roles* are hats agents wear, **not** human permissions, so the gate uses
-addressing, not roles. Console also offers a "Custom rules" addressing option (named
-people/agents/rooms), which could tighten layer 1. Not decided yet, see HANDOFF.
+addressing, not roles. Console's "Custom rules" addressing (named people/agents/rooms)
+can't be written in a template (YAML allows only `owner | owner-agents | anyone`); the
+owner can still set it by hand on sec-fixer's page later.
+
+**Agents wake only when mentioned.** That's why the approval must be
+`@sec-fixer approved`, and why every ravel reply starts with `@<asker>` (see §6).
 
 ## 6. Ravel integration (verified Nov 5 against the real Ravel)
 
@@ -132,6 +143,36 @@ Results on `main` (exactly what the demo needs):
 Ravel's entry points list says *that* `search_view` is an untrusted HTTP route but not its
 URL. The adapter reads the `@app.route(...)` line itself to print `GET /api/search`.
 
+### Ravel reply contract (the agents' instructions depend on it, so keep it exact)
+
+- **Every reply starts with `@<sender name>`** of the message it answers. Agents only
+  wake when mentioned, so without this sec-triager and sec-fixer never see the verdict.
+- Accept paths with or without the `demo-app/` prefix (`app.py:search` = `demo-app/app.py:search`).
+- Verdict lines (the first line after the mention), kept under ~12 lines in total:
+
+```
+@sec-triager 🔴 REACHABLE · MEDIUM · app.py:search (B608 SQL injection)
+Path: GET /api/search → search_view() → search()
+
+@sec-triager 🟢 UNREACHABLE · legacy_utils.py:eval_expr (B307 eval)
+Proof: 0 callers; not reachable from any route.
+
+@sec-triager ⚪ UNKNOWN · <file>:<function> (<rule>)
+Reason: <unresolved call / no finding found>
+
+@sec-fixer ✅ FIX VERIFIED on fix/sqli-search · B608 gone from search(); 0 reachable findings
+Callers of search(): search_view (GET /api/search)
+
+@sec-fixer ❌ STILL REACHABLE on fix/sqli-search · B608 · Path: GET /api/search → search_view() → search()
+
+@sec-triager 📄 Attached wiki: app (room document "wiki-app")
+
+Ravel error: <short reason>
+```
+
+The emoji + word at the start (`🔴 REACHABLE`, `🟢 UNREACHABLE`, `⚪ UNKNOWN`,
+`✅ FIX VERIFIED`, `❌ STILL REACHABLE`) is what the agents' instructions key on.
+
 ## 7. Decisions log
 
 | # | Decision | Why |
@@ -143,6 +184,11 @@ URL. The adapter reads the `@app.route(...)` line itself to print `GET /api/sear
 | D5 | Demo app on **8080** | Avoid macOS AirPlay (5000) and common Switch ports |
 | D6 | `verify` uses a temporary **git worktree**, never `git checkout` | Don't move the working tree under sec-fixer mid-demo |
 | D7 | Register `ravel` + `sec-scanner` **before** importing the room template | A room template fails if an agent it names doesn't exist |
+| D8 | Template = **version 1 group** (2 agents, 2 rooms, 1 link). sec-triager works in its own empty folder `{$agents_dir}/sec-triager`; sec-fixer works in the repo clone (`repo_dir`) | v1 is easier for judges to read. The triager never needs code (and then never loads the builder's `CLAUDE.md`). sec-fixer must branch in the same checkout ravel verifies with a worktree; its instructions say to ignore the builder docs |
+| D9 | sec-fixer `addressing: owner-agents`; sec-triager `anyone`; ravel `anyone` | Custom rules can't be set in a template. owner-agents + the instruction rule (only the human owner's "approved") gives the same protection |
+| D10 | sec-fixer `auto_mode: true`, `auto_approve: false` (no Bypass) | Bypass would undercut the human-in-the-loop story. If Auto mode prompts too often in dry runs, add a narrow Claude Code allowlist (git, pytest) rather than Bypass |
+| D11 | Approval is `@sec-fixer approved`, and ravel replies start with `@<asker>` | Agents wake only when mentioned |
+| D12 | `security_owner` is a template field (type `user`), used in instructions and room members | The gate names one person explicitly; Switch checks the username exists on the chat app |
 
 ## 8. Ports and local setup facts
 
@@ -154,5 +200,5 @@ URL. The adapter reads the `@app.route(...)` line itself to print `GET /api/sear
   agents on it. Each teammate who wants to test live runs their own Console + server.
   To let others *talk* to the agents, connect Discord (Phase 7).
 - A Console-created agent works in `~/.switch/agents/<host>-<port>/<name>` unless its
-  **Directory** is set. sec-fixer must point at a real git checkout (open question, HANDOFF Q1).
+  **Directory** is set. The template points sec-fixer at the repo clone (D8).
 - Start order after a reboot: Docker Desktop → Switch Console → check "Running locally" → Mattermost.

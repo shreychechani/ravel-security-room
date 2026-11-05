@@ -121,3 +121,21 @@
 
 **Next**
 - T1/T1b/T2 (adapter Ravel side, wiki cache, tests). Can run in parallel with T3 unit part, T4, T8.
+
+## Phase 3, step 6 — Switch template + agent instructions (Nov 5) ✅ written, import test pending
+
+**Done**
+- `switch/security-room.template.yaml` rewritten against TEMPLATES.md (version 1 group): params
+  `security_owner` (user), `repo_dir` (directory), `bridge`, `provider`, `location`; agents sec-triager
+  (own empty folder, addressing anyone) and sec-fixer (repo clone, owner-agents, Auto mode on, Bypass off);
+  rooms `security-intake` (room instructions + `triage-playbook` room document + kickoff) and
+  `security-ledger`; link between them. Parsed and checked: all placeholders declared, no agent field
+  missing, only `ravel` and `sec-scanner` must pre-exist.
+- Final instructions: triage flow, ravel commands, fix-room naming `fix-<kind>-<function>`, ledger
+  formats, the approval gate (only `@sec-fixer approved` from the security owner's human account).
+- Found and fixed: agents wake only when mentioned, so approval is `@sec-fixer approved` and every ravel
+  reply must start with `@<asker>` (reply contract in ARCHITECTURE §6, now part of T1).
+- Decisions D8–D12 in `docs/ARCHITECTURE.md`; HANDOFF has import steps and the remaining questions.
+
+**Next**
+- Import test needs T3 (register ravel + sec-scanner). Delete the Phase 3 test agent/room first.
