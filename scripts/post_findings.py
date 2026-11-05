@@ -84,3 +84,89 @@ def format_finding_message(finding):
 
     function_name = find_enclosing_function(rel_path, line)
     return f"@sec-triager New finding {rule} in {rel_path}:{line} ({function_name}): {msg}."
+
+
+import argparse
+import time
+import requests
+
+
+def get_room_id(base_url, agent_id, api_key, room_name="security-intake"):
+    """Find the ID of the intake room using the list_rooms operation."""
+    headers = {"Authorization": f"Bearer {api_key}"}
+    resp = requests.post(f"{base_url}/agents/{agent_id}/ops/list_rooms",
+                         headers=headers, json={}, timeout=15)
+    resp.raise_for_status()
+    rooms = resp.json().get("result") or []
+    for r in rooms:
+        name = r.get("name") or r.get("display_name") or ""
+        if name.strip("#") == room_name.strip("#"):
+            return r.get("id") or r.get("room_id")
+    raise ValueError(f"Room '{room_name}' not found among rooms: {[r.get('name') for r in rooms]}")
+
+
+def post_message(base_url, agent_id, api_key, room_id, content):
+    """Post one message into a room via HTTP."""
+    headers = {"Authorization": f"Bearer {api_key}"}
+    resp = requests.post(f"{base_url}/agents/{agent_id}/message",
+                         headers=headers, json={"room_id": room_id, "content": content},
+                         timeout=15)
+    resp.raise_for_status()
+
+
+def post_all_findings(base_url=None, agent_id=None, api_key=None,
+                      room_name="security-intake", interval=2.0,
+                      dry_run=False, findings_path=None):
+    """Scan and post each finding into the security intake room."""
+    findings = load_findings(findings_path)
+    messages = [format_finding_message(f) for f in findings]
+
+    print(f"Loaded {len(messages)} findings to post:")
+    for msg in messages:
+        print(f"  • {msg}")
+
+    if dry_run:
+        print("\nDry-run mode: no messages sent to Switch.")
+        return messages
+
+    base_url = (base_url or config.SWITCH_URL).rstrip("/")
+    agent_id = agent_id or config.SCANNER_AGENT_ID
+    api_key = api_key or config.SCANNER_AGENT_KEY
+
+    if not (agent_id and api_key):
+        raise ValueError(
+            "SCANNER_AGENT_ID and SCANNER_AGENT_KEY must be configured in .env or arguments. "
+            "Register the agent first: python -m ravel_adapter.register sec-scanner"
+        )
+
+    room_id = get_room_id(base_url, agent_id, api_key, room_name)
+    print(f"\nPosting to room '{room_name}' (ID: {room_id}) via {base_url}...")
+
+    for i, msg in enumerate(messages, 1):
+        post_message(base_url, agent_id, api_key, room_id, msg)
+        print(f"[{i}/{len(messages)}] Posted: {msg[:65]}...")
+        if i < len(messages) and interval > 0:
+            time.sleep(interval)
+
+    print("All findings posted successfully.")
+    return messages
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Post security scan findings into Switch room.")
+    parser.add_argument("--dry-run", action="store_true", help="Format and print findings without sending.")
+    parser.add_argument("--room", default="security-intake", help="Target room name (default: security-intake).")
+    parser.add_argument("--interval", type=float, default=2.0, help="Delay between posts in seconds (default: 2.0).")
+    parser.add_argument("--findings", default=None, help="Path to findings.json file.")
+    args = parser.parse_args()
+
+    post_all_findings(
+        room_name=args.room,
+        interval=args.interval,
+        dry_run=args.dry_run,
+        findings_path=args.findings,
+    )
+
+
+if __name__ == "__main__":
+    main()
