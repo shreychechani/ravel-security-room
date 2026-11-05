@@ -444,3 +444,134 @@ class TestHandleVerify:
         assert "❌ STILL REACHABLE on fix/sqli-search" in reply.text
         assert "B608" in reply.text
         assert "Path: GET /api/search → search_view() → search()" in reply.text
+
+
+# ── handle() — wiki and attach wiki ──────────────────────────────────
+
+
+class TestHandleWiki:
+    @patch("ravel_adapter.ravel.scan", side_effect=_mock_scan)
+    def test_wiki_generates_page(self, mock_scan):
+        reply = handle("@ravel wiki app", sender="triager")
+        assert reply.text.startswith("@triager ")
+        assert "📄 Wiki · app.py" in reply.text
+        assert "Functions:" in reply.text
+        assert "search" in reply.text
+        assert reply.document is None
+
+    @patch("ravel_adapter.ravel.scan", side_effect=_mock_scan)
+    def test_attach_wiki_returns_document(self, mock_scan):
+        reply = handle("@ravel attach wiki app", sender="triager")
+        assert reply.text.startswith('@triager 📄 Attached wiki: app (room document "wiki-app")')
+        assert reply.document is not None
+        doc_name, doc_content = reply.document
+        assert doc_name == "wiki-app"
+        assert "📄 Wiki · app.py" in doc_content
+
+    @patch("ravel_adapter.ravel.scan", side_effect=_mock_scan)
+    def test_attach_wiki_nested_module(self, mock_scan):
+        reply = handle("@ravel attach wiki vendor.old_parser", sender="triager")
+        assert 'room document "wiki-vendor-old_parser"' in reply.text
+        assert reply.document[0] == "wiki-vendor-old_parser"
+
+    @patch("ravel_adapter.ravel.scan", side_effect=_mock_scan)
+    def test_wiki_nonexistent_module(self, mock_scan):
+        reply = handle("@ravel wiki nonexistent_xyz", sender="triager")
+        assert "Ravel error: no module nonexistent_xyz" in reply.text
+
+    @patch("ravel_adapter.ravel.wiki_page", side_effect=RavelError("scan down"))
+    def test_wiki_fallback_to_cache(self, mock_wiki_page):
+        # app.md exists in wiki_cache/
+        reply = handle("@ravel wiki app", sender="dev")
+        assert "(from cache)" in reply.text
+        assert "📄 Wiki · app.py" in reply.text
+
+
+# ── handle() — unexpected exception handling & git helper ────────────
+
+from unittest.mock import MagicMock
+from ravel_adapter.ravel import _git
+
+
+class TestErrorHandlingAndGit:
+    @patch("ravel_adapter.ravel.check", side_effect=RuntimeError("something crashed internally"))
+    def test_handle_never_raises_on_unexpected_exception(self, mock_check):
+        reply = handle("@ravel check app.py:search", sender="user")
+        assert reply.text.startswith("@user Ravel error: RuntimeError: something crashed internally")
+        assert reply.document is None
+
+    @patch("subprocess.run")
+    def test_git_success(self, mock_subproc):
+        mock_subproc.return_value = MagicMock(returncode=0, stdout="main\n", stderr="")
+        out = _git(Path("."), "rev-parse", "--abbrev-ref", "HEAD")
+        assert out == "main"
+
+    @patch("subprocess.run")
+    def test_git_failure_raises_ravel_error(self, mock_subproc):
+        mock_subproc.return_value = MagicMock(returncode=1, stdout="", stderr="fatal: not a git repo")
+        with pytest.raises(RavelError, match="git rev-parse failed: fatal: not a git repo"):
+            _git(Path("."), "rev-parse", "--show-toplevel")
+
+
+# ── scan() error handling ────────────────────────────────────────────
+
+import subprocess
+from ravel_adapter.ravel import scan
+
+
+class TestScanExecution:
+    @patch("subprocess.run", side_effect=FileNotFoundError)
+    def test_scan_uv_not_found(self, mock_subproc, tmp_path):
+        with pytest.raises(RavelError, match="not found; install uv"):
+            scan(tmp_path)
+
+    @patch("subprocess.run", side_effect=subprocess.TimeoutExpired(cmd=["uv"], timeout=120))
+    def test_scan_timeout(self, mock_subproc, tmp_path):
+        with pytest.raises(RavelError, match="Ravel took longer than"):
+            scan(tmp_path)
+
+    @patch("subprocess.run")
+    def test_scan_failure_nonzero_exit(self, mock_subproc, tmp_path):
+        mock_subproc.return_value = MagicMock(returncode=1, stderr="Syntax error in repo\n")
+        with pytest.raises(RavelError, match="ravel scan failed: Syntax error in repo"):
+            scan(tmp_path)
+
+    @patch("subprocess.run")
+    def test_scan_success(self, mock_subproc, tmp_path):
+        def fake_run(cmd, **kwargs):
+            # The command specifies --json <out>
+            json_out = Path(cmd[cmd.index("--json") + 1])
+            json_out.write_text('{"findings": [], "graph_view": {"edges": []}}')
+            return MagicMock(returncode=0, stderr="")
+
+        mock_subproc.side_effect = fake_run
+        data = scan(tmp_path)
+        assert data == {"findings": [], "graph_view": {"edges": []}}
+
+
+# ── wiki cache & helper functions ────────────────────────────────────
+
+from ravel_adapter.ravel import _app_node, _caller_name, build_wiki_cache
+
+
+class TestWikiInternals:
+    def test_app_node_filtering(self):
+        assert _app_node("app.py::search::L30") is True
+        assert _app_node("vendor/old_parser.py::parse::L6") is True
+        assert _app_node("tests/test_app.py::test_fn") is False
+        assert _app_node("demo-app/tests/test_x.py::test_fn") is False
+        assert _app_node("unknown::jsonify") is False
+
+    def test_caller_name_module_level(self):
+        assert _caller_name("app.py::<file>") == "app.py module code"
+        assert _caller_name("app.py::search_view::L41") == "search_view()"
+
+    @patch("ravel_adapter.ravel.scan", side_effect=_mock_scan)
+    def test_build_wiki_cache_writes_files(self, mock_scan, tmp_path, monkeypatch):
+        fake_cache = tmp_path / "wiki_cache"
+        monkeypatch.setattr("ravel_adapter.ravel.WIKI_CACHE", fake_cache)
+        written = build_wiki_cache()
+        assert "app" in written
+        assert (fake_cache / "app.md").exists()
+        content = (fake_cache / "app.md").read_text()
+        assert "📄 Wiki · app.py" in content
