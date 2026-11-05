@@ -14,10 +14,10 @@
 
 **Broken / missing**
 - Docker is not installed. Switch Console needs it (Phase 3).
-- No `gh` login: Shrey chose plain git + a fine-grained token instead of authorizing GitHub CLI.
+- No `gh` login: the owner chose plain git + a fine-grained token instead of authorizing GitHub CLI.
 
 **Next**
-- Install Docker Desktop (Shrey), then Phase 3: Switch Console + verify the template with switch-docs.
+- Install Docker Desktop (the owner), then Phase 3: Switch Console + verify the template with switch-docs.
 
 ## Phase 2 — GitHub (Nov 4) ✅
 
@@ -40,7 +40,7 @@
 - `requirements.txt` pinned to the installed versions; `scan.sh` uses `.venv/bin/bandit` and fails
   loudly instead of printing stale `findings.json`; `.gitignore` covers `.ravel_state.json`, `.ravel-worktrees/`.
 
-- Step 2 done by Shrey: Console installed, local server running ("Running locally"), signed in as Admin,
+- Step 2 done by the owner: Console installed, local server running ("Running locally"), signed in as Admin,
   switch-buddy powered by Claude Code.
 - Step 4 done, **with a correction to PLAN.md**: the Console-run local server does **not** use 8000/3000.
   Console picks free ports and writes them to
@@ -60,13 +60,13 @@
 
 **Broken / blocked**
 - sec-triager's working directory is **not the repo**: it reported
-  `/Users/shreychechani/.switch/agents/localhost-52120/sec-triager` (empty, not a git repo, created when the
+  `~/.switch/agents/localhost-52120/sec-triager` (empty, not a git repo, created when the
   agent was added). Either the Directory field was not set or the managed-agent move dropped it. Not fixed on
   purpose: the right directory is a design decision (see Open 6).
 - Nothing else blocking. The 8080 move (C2) is still harmless, but its "Switch uses 8000" reason applies only to the
   docker-compose self-host.
 
-**Next ([SHREY], click-by-click given in chat)**
+**Next ([OWNER], click-by-click given in chat)**
 - Step 5: sign in to Mattermost (Home → Messaging apps → Sign-in details…), add `sec-triager` in Your Agents,
   mention it in a Mattermost channel.
 - Step 6 is `[OPUS]`: finish the template (§5) and agent instructions (§6).
@@ -91,7 +91,7 @@
    (`/switch-rooms/getting-started/agent-settings#rename-or-move-the-agent`). Two problems to design around:
    (a) `sec-fixer` needs a real git checkout to branch, patch, run pytest and merge; (b) docs say standing
    instructions in the working directory "become its default behavior", and this repo's `CLAUDE.md` is the
-   *builder's* rulebook ("stop after each phase, wait for Shrey"). Claude Code also reads CLAUDE.md in parent
+   *builder's* rulebook ("stop after each phase, wait for the owner"). Claude Code also reads CLAUDE.md in parent
    directories. Decide: separate clone/worktree for the agents without `CLAUDE.md`, or not. Note the default
    directory name contains the api port (`localhost-52120`), so it may change if ports change (Open 5).
 7. Phase 3 template step needs the checks in Open 1–6 answered before `switch/security-room.template.yaml`
@@ -116,7 +116,7 @@
   made-up `RAVEL_*_CMD` lines (those Ravel commands don't exist).
 
 **Broken / missing**
-- Ravel has no `LICENSE` file (pyproject says MIT); needed so judges can use it (T9, Shrey).
+- Ravel has no `LICENSE` file (pyproject says MIT); needed so judges can use it (T9, the owner).
 - Ravel's entry points don't include the route URL; the adapter reads `@app.route` itself.
 
 **Next**

@@ -37,7 +37,7 @@ Everything happens in chat rooms, so the whole team can see every decision.
 | **sec-fixer** | AI agent (Claude Code). Branches, patches, runs tests, asks Ravel to verify, merges only after human approval | Started by Console when mentioned |
 | **ravel** | *Our* custom agent: a Python program (`ravel_adapter/`) that wraps the Ravel CLI and talks to Switch directly | `python ravel_adapter/adapter.py` |
 | **sec-scanner** | A second identity our scripts use to post findings into `#security-intake` | `scripts/post_findings.py` |
-| **Ravel** | Shrey's reachability tool: builds a call graph of a Python repo and says whether outside input can reach each scanner finding | Separate repo, `github.com/shreychechani/Ravel` |
+| **Ravel** | Our reachability tool: builds a call graph of a Python repo and says whether outside input can reach each scanner finding | Separate repo, `github.com/shreychechani/Ravel` |
 | **demo-app/** | Tiny Flask shop with 3 planted findings | `python demo-app/app.py`, port 8080 |
 
 ### Why Docker at all?

@@ -11,14 +11,14 @@ every correction).
   - `[SONNET]`: well-specified coding. Follow the spec, run the acceptance check, commit.
   - `[OPUS]`: needs judgment (design, debugging an unclear failure, wording agent
     instructions, the pitch). Switch to Opus (`/model`) for these.
-  - `[SHREY]`: GUI, accounts or decisions only Shrey can do. Print click-by-click steps and wait.
+  - `[OWNER]`: GUI, accounts or decisions only the project owner can do. Print click-by-click steps and wait.
 - **Escalate to Opus** whenever a `[SONNET]` task hits something this plan didn't predict:
   a Switch response that doesn't match §3, a test that fails for an unclear reason, or a
   choice not written down here. Don't guess; write the question in `PROGRESS.md` under "Open".
 - **Every Switch fact** still gets checked with the `switch-docs` MCP before code depends on
   it. §3 is a summary with doc paths, not a substitute.
 - **After each phase:** update `PROGRESS.md` (done / broken / next), commit locally, stop,
-  wait for "continue". Shrey pushes (`git push`); there's no `gh` login on this machine.
+  wait for "continue". The owner pushes (`git push`); there's no `gh` login on the build machine.
 
 ## 1. Status (Nov 4)
 
@@ -39,12 +39,12 @@ ports (not 8000/3000), the verify rule (D2) and the graph-built wiki (D3).
 
 | # | CLAUDE.md / starter says | Reality (doc) | What we do |
 | --- | --- | --- | --- |
-| C1 | Agent Protocol = "SSE in, HTTP out" | WebSocket in, HTTP out. SSE is deprecated and "will be removed after a transition period" (`/switch-rooms/internals/agent-protocol`) | Adapter uses WebSocket via `websocket-client` (approved by Shrey Nov 4) |
+| C1 | Agent Protocol = "SSE in, HTTP out" | WebSocket in, HTTP out. SSE is deprecated and "will be removed after a transition period" (`/switch-rooms/internals/agent-protocol`) | Adapter uses WebSocket via `websocket-client` (approved by the owner Nov 4) |
 | C2 | Demo app on port 8000 | Local Switch stack publishes its API on **8000** and Gateway on **3000** (`/switch-rooms/deploy/self-host`) | Move demo app to **8080** (env `PORT`, default 8080) |
 | C3 | Template fields `{provider}`, `{bridge}` just work | Placeholders must be declared under `params:`; every created agent needs `provider`, `location`/`machine` and `directory` (TEMPLATES.md) | Rewrite template, see §5 |
 | C4 | Ravel "joins later" | A **room** template stops if any agent it names doesn't exist yet | Register `ravel` + `sec-scanner` **before** importing the template, then list them in the room |
 | C5 | `SWITCH_EVENTS_URL` / `SWITCH_SEND_URL` / `SWITCH_AGENT_TOKEN` | One bridge base URL + agent id + agent API key. Registration uses a separate **registration key** | New `.env` keys, see §4.1 |
-| C6 | "Set roles so only Shrey can approve" | Switch room *roles* are hats agents wear, not human permissions. Who may instruct an agent is its **addressing** setting | Gate = sec-fixer addressing + instructions + a visible refusal, see §6 |
+| C6 | "Set roles so only the owner can approve" | Switch room *roles* are hats agents wear, not human permissions. Who may instruct an agent is its **addressing** setting | Gate = sec-fixer addressing + instructions + a visible refusal, see §6 |
 | C7 | `verify` does `git checkout` in the repo | That would move the working tree under sec-fixer mid-demo | `verify` uses a temporary `git worktree`, see §4.4 |
 
 ## 3. Switch facts we rely on (summary; verify via switch-docs)
@@ -109,8 +109,8 @@ RAVEL_AGENT_ID=                           # written by register.py
 RAVEL_AGENT_KEY=                          # written by register.py (secret)
 SCANNER_AGENT_ID=
 SCANNER_AGENT_KEY=
-SECURITY_OWNER=                           # Shrey's Switch participant id, for the ledger
-RAVEL_REACH_CMD=...  RAVEL_WIKI_CMD=...  RAVEL_CALLERS_CMD=...   # from Shrey, Phase 4
+SECURITY_OWNER=                           # the security owner's Switch participant id, for the ledger
+RAVEL_REACH_CMD=...  RAVEL_WIKI_CMD=...  RAVEL_CALLERS_CMD=...   # from the owner, Phase 4
 DEMO_REPO_PATH=./demo-app
 ```
 Load `.env` with a 10-line stdlib parser in `ravel_adapter/config.py` (no python-dotenv).
@@ -141,7 +141,7 @@ Load `.env` with a 10-line stdlib parser in `ravel_adapter/config.py` (no python
 8. Mention stripping: remove a leading `@ravel` or `@<display name>`, case-insensitive,
    before parsing. Log the raw body once in Phase 5 to see the real mention format.
 
-### 4.4 Ravel side (ravel.py) `[SONNET]`, after Shrey gives the CLI (Phase 4)
+### 4.4 Ravel side (ravel.py) `[SONNET]`, after the owner gives the CLI (Phase 4)
 - Commands: `check <file>:<function>`, `verify <branch> <function>`, `wiki <module>`,
   `who calls <function>`, `attach wiki <module>`, `help`.
 - **Chat format** (keep under ~12 lines):
@@ -213,7 +213,7 @@ agents:
     provider: "{provider}"
     location: "{location}"
     directory: "{repo_dir}"
-    addressing: owner-agents      # Shrey + his agents only; teammates get a visible refusal
+    addressing: owner-agents      # the owner + the owner's agents only; teammates get a visible refusal
     instructions: |
       (see §6)
 group:
@@ -238,7 +238,7 @@ in v1 (TEMPLATES.md implies yes)? Does the local server have agent management on
 ## 6. Agent instructions and the approval gate `[OPUS]`
 
 The gate is three layers. Explain all three in the README ("How Switch is used"):
-1. **Switch addressing:** sec-fixer accepts instructions only from Shrey and Shrey's agents.
+1. **Switch addressing:** sec-fixer accepts instructions only from the security owner and the owner's agents.
    A teammate typing "approved" gets a **visible refusal from Switch**. Show this in the demo.
 2. **Instructions:** sec-fixer merges only when the message is from the human security
    owner (a user participant, not an agent) and says exactly `approved`. Anything else
@@ -257,20 +257,20 @@ and "never merge or approve yourself".
 ## 7. Phases (remaining)
 
 ### Phase 3 — Switch up and running (Day 1–2)
-1. `[SHREY]` Install Docker Desktop (Apple Silicon), open it, wait for "running".
-2. `[SHREY]` Download Switch Console (`switch-console-arm64.dmg` from the Switch releases),
+1. `[OWNER]` Install Docker Desktop (Apple Silicon), open it, wait for "running".
+2. `[OWNER]` Download Switch Console (`switch-console-arm64.dmg` from the Switch releases),
    choose **Run a server on this computer**, finish setup, sign in to the bundled
    Mattermost, and link your messaging account.
 3. `[SONNET]` Move the demo app to port 8080 (C2): `app.run(port=int(os.environ.get("PORT", 8080)))`,
    then update the README, CLAUDE.md §5 and PROGRESS.md. Re-run Phase 1 checks.
 4. `[SONNET]` `curl http://localhost:8000/health` to confirm the bridge base URL. Record it.
-5. `[SHREY]` Console: add agent **sec-triager**, provider Claude Code, working directory =
+5. `[OWNER]` Console: add agent **sec-triager**, provider Claude Code, working directory =
    this repo. Mention it in a Mattermost channel.
 6. `[OPUS]` Finish the template (§5) + instructions (§6). Don't import it yet (needs ravel, Phase 5).
 - **Done when:** sec-triager replies in Mattermost.
 
 ### Phase 4 — Ravel adapter, Ravel side (Day 2)
-1. `[SHREY]` Tell us: how judges install Ravel (pip? repo?), and the real commands +
+1. `[OWNER]` Tell us: how judges install Ravel (pip? repo?), and the real commands +
    sample output for reachability, wiki, callers. **Blocker for this phase.**
 2. `[SONNET]` Split adapter.py into config.py / ravel.py / adapter.py (§4.2), set
    `RAVEL_*_CMD`, implement formatting (§4.4), wiki cache, worktree-based verify.
@@ -284,11 +284,11 @@ and "never merge or approve yourself".
 ### Phase 5 — Ravel adapter, protocol side (Day 2)
 1. `[SONNET]` Add `websocket-client` to requirements.txt (pin the latest 1.x), then
    `config.py`, `register.py`, `switch_client.py` exactly as §4.3, plus `test_switch_client.py`.
-2. `[SHREY]` Gateway (http://localhost:3000) → API Keys → Create Registration Key → paste
+2. `[OWNER]` Gateway (http://localhost:3000) → API Keys → Create Registration Key → paste
    into `.env` as `SWITCH_REGISTRATION_KEY`.
 3. `[SONNET]` Run `python -m ravel_adapter.register ravel` and
    `python -m ravel_adapter.register sec-scanner`. Set ravel's addressing to `anyone`.
-4. `[SHREY]` Add `ravel` to a Mattermost room (Console → room → add agent).
+4. `[OWNER]` Add `ravel` to a Mattermost room (Console → room → add agent).
 5. `[SONNET]` Run the adapter, test `@ravel check app.py:search` in chat, and log the raw
    payload once to confirm the field names.
 6. `[SONNET]` `ravel_adapter/README.md`.
@@ -296,14 +296,14 @@ and "never merge or approve yourself".
   and restarting the adapter resumes without duplicate replies.
 
 ### Phase 6 — Full workflow (Day 2–3)
-1. `[SHREY]` Import the template (§5) in Console → Templates → Import, then Use.
+1. `[OWNER]` Import the template (§5) in Console → Templates → Import, then Use.
 2. `[SONNET]` `scripts/post_findings.py`: run `scan.sh` → read `findings.json` → find the
    `security-intake` room id (`list_rooms` op with the scanner key) → post one message per
    finding from **sec-scanner**: `@sec-triager New finding B608 in demo-app/app.py:34 (search):
    Possible SQL injection…`. Wait about 2 s between posts.
 3. `[SONNET]` `scripts/reset_demo.sh`: `git checkout main`, `git reset --hard <DEMO_BASE tag>`
    (create tag `demo-base` on the 3-finding commit), delete local `fix/*` branches,
-   `git worktree prune`, remove `demo-app/demo.db`, re-run scan (assert 3). **Ask Shrey
+   `git worktree prune`, remove `demo-app/demo.db`, re-run scan (assert 3). **Ask the owner
    before the first run** (it uses `reset --hard`). Never touch `origin`.
 4. `[OPUS]` Run the 8-step flow (CLAUDE.md Phase 6) and tune the instructions where agents
    go off-script. Expect 2–3 rounds.
@@ -311,9 +311,9 @@ and "never merge or approve yourself".
 
 ### Phase 7 — Ask Ravel + Discord (Day 3)
 1. `[SONNET]` Check `@ravel who calls process_payment` and `@ravel wiki payments` in any room.
-2. `[SHREY]` Connect Discord (Console → server Home → Messaging apps; doc
+2. `[OWNER]` Connect Discord (Console → server Home → Messaging apps; doc
    `/switch-rooms/deploy/messaging-apps/discord`), create the channels, run the flow there.
-3. `[SHREY]` Optional demo moment: a second account plays "developer" and types "approved"
+3. `[OWNER]` Optional demo moment: a second account plays "developer" and types "approved"
    → Switch refuses.
 - Cut order if late: Discord (keep Mattermost) → Ask Ravel. **Never cut** the approval gate or verify.
 
@@ -322,7 +322,7 @@ and "never merge or approve yourself".
 - `[SONNET]` README quickstart (under 15 min, every command copy-pasteable), `docs/BLOG.md`
   draft from PROGRESS.md notes ("one thing that broke": the SSE→WebSocket and port-8000 findings).
 - `[SONNET]` Fresh-clone test in the scratchpad: follow the README word for word and fix every gap.
-- `[SHREY]` Record the video, submit by 9 PM IST.
+- `[OWNER]` Record the video, submit by 9 PM IST.
 
 ## 8. Risks
 

@@ -6,13 +6,13 @@
 >
 > **If you are a teammate or a teammate's AI agent:** start with
 > [`docs/HANDOFF.md`](docs/HANDOFF.md) (status, setup, open tasks), then
-> [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). "Shrey" below is the project owner; when
-> a rule says "ask Shrey", ask your own human, who coordinates with Shrey.
+> [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). When a rule says "ask the owner", ask your own human, who
+> coordinates with the project owner.
 
 Read this whole file before doing anything, then read `PLAN.md`. This file says what we
 are building and the rules; `PLAN.md` has the task-by-task plan, verified Switch facts, and
 corrections to this file (where they disagree, `PLAN.md` wins). Work phase by phase. At the end of
-each phase, stop, report results, and wait for Shrey to say "continue".
+each phase, stop, report results, and wait for the owner to say "continue".
 
 ---
 
@@ -21,7 +21,7 @@ each phase, stop, report results, and wait for Shrey to say "continue".
 - **Event:** "Flip the Switch" hackathon by WeMakeDevs x DevTools Academy, powered by Switch.
 - **Deadline:** Nov 7, 2026, 11:59 PM IST. Our own target: submit by **9 PM IST, Nov 7**.
 - **Track:** Track 1, Best Business Workflow.
-- **Owner:** Shrey (human). You are Claude Code, the main builder.
+- **Owner:** the project owner (human), who is also the security owner. You are Claude Code, the main builder.
 - **Switch:** open-source infrastructure (github.com/sandbox-quantum/switch) that puts AI
   agents into team chat. Each chat channel (Slack, Discord, Telegram, Mattermost) becomes a
   "room". Agents connect through the **Switch Agent Protocol** (WebSocket in, HTTP out; SSE is deprecated).
@@ -29,7 +29,7 @@ each phase, stop, report results, and wait for Shrey to say "continue".
 - **Switch docs:** available to you through the `switch-docs` MCP server
   (`https://docs.switchagents.ai/mcp`, HTTP transport). ALWAYS use it for any Switch fact: template fields,
   protocol endpoints, event formats, auth. Never guess Switch APIs.
-- **Ravel:** Shrey's own codebase intelligence tool for Python repos. It builds a call/import
+- **Ravel:** our codebase intelligence tool for Python repos. It builds a call/import
   graph, generates a wiki, and does reachability analysis (can outside input reach a line?).
 
 ## 2. What we are building
@@ -63,7 +63,7 @@ Switch Core: rooms, roles, tasks, approval gate
         │  Agent Bridge (WebSocket in, HTTP out)
 Agents
   ├─ sec-triager  (Claude Code or OpenCode via Switch Console)
-  ├─ ravel        (custom agent: ravel_adapter/ + Shrey's Ravel CLI)
+  ├─ ravel        (custom agent: ravel_adapter/ + the Ravel CLI)
   └─ sec-fixer    (Claude Code via Switch Console)
         │
 demo-app/  (Flask app with 3 planted findings)
@@ -83,7 +83,7 @@ demo-app/  (Flask app with 3 planted findings)
 4. **Bonus, Ask Ravel:** answer `@ravel who calls X` and `@ravel wiki <module>` for any developer.
 
 ### Humans (Switch roles)
-- **Security owner (Shrey):** the ONLY one who can approve a merge.
+- **Security owner:** the ONLY one who can approve a merge.
 - **Developer:** reports issues, asks Ravel questions.
 
 ## 4. Repo layout (already exists)
@@ -106,24 +106,24 @@ sec-fixer agent in the demo. Keep exactly 3 scanner findings on `main`.
 ## 5. Rules for you (Claude Code)
 
 - Use `switch-docs` MCP for every Switch detail. If the docs don't answer it, say so and
-  ask Shrey; do not invent endpoints, fields or flags.
-- Ask Shrey before: pushing to GitHub, creating repos, installing global tools, deleting
+  ask the owner; do not invent endpoints, fields or flags.
+- Ask the owner before: pushing to GitHub, creating repos, installing global tools, deleting
   files, or anything that costs money.
 - Never commit secrets. `.env` stays in `.gitignore`. Use `.env.example` for placeholders.
 - Small commits with clear messages, at least one per working session.
-- Python 3.11+, standard library + `requirements.txt` only, unless Shrey approves more.
+- Python 3.11+, standard library + `requirements.txt` only, unless the owner approves more.
 - macOS: never use port 5000 (AirPlay uses it). Switch's local API uses 8000 and its Gateway 3000, so the demo app runs on **8080**.
 - Keep code simple and readable; judges must understand it quickly.
 - After each phase, update `PROGRESS.md` (create it) with: done, broken, next.
 
-## 6. Things ONLY Shrey can do (ask him, don't attempt)
+## 6. Things ONLY the owner can do (ask, don't attempt)
 
 - Install and click through **Switch Console** (desktop GUI) and start the local server.
 - Connect Discord/Slack to Switch, create channels, set roles in the UI.
 - Make Ravel available to judges (public repo or pip package) and tell you its CLI commands.
 - Sign the Switch contributor agreement (Track 3), register, record the video, submit.
 
-When you reach one of these, print exact click-by-click instructions for Shrey, then wait.
+When you reach one of these, print exact click-by-click instructions for the owner, then wait.
 
 ## 7. Phases (do in order; stop after each)
 
@@ -135,21 +135,21 @@ When you reach one of these, print exact click-by-click instructions for Shrey, 
 - **Done when:** all of the above pass. Report output.
 
 ### Phase 2 — GitHub (Day 1)
-- Ask Shrey for approval, then: `git init` (if needed), first commit,
+- Ask the owner for approval, then: `git init` (if needed), first commit,
   `gh repo create ravel-security-room --public --source=. --push`.
 - Add an MIT `LICENSE`.
 - **Done when:** repo is public and pushed. Report the URL.
 
-### Phase 3 — Switch up and running (Day 1, mostly Shrey)
-- Give Shrey Console steps: start local server (Mattermost included), add agent
+### Phase 3 — Switch up and running (Day 1, mostly the owner)
+- Give the owner Console steps: start local server (Mattermost included), add agent
   `sec-triager` with working directory = this repo, provider = Claude Code or OpenCode.
 - Using switch-docs, verify every field in `switch/security-room.template.yaml`
   (agents, addressing, provider, instructions, room, bridge, kickoff). Fix it to match
   the current schema. Explain each change.
-- **Done when:** Shrey confirms sec-triager replies in a Mattermost channel.
+- **Done when:** the owner confirms sec-triager replies in a Mattermost channel.
 
 ### Phase 4 — Ravel adapter, Ravel side (Day 2)
-- Ask Shrey for Ravel's real CLI commands (reachability, wiki, callers) and output format.
+- Ask the owner for Ravel's real CLI commands (reachability, wiki, callers) and output format.
 - Update `.env` / `.env.example` `RAVEL_*_CMD` lines.
 - Make Ravel output short and chat-friendly: verdict (REACHABLE / UNREACHABLE),
   severity, call path like `/api/search → search_view() → search()`.
@@ -167,26 +167,26 @@ When you reach one of these, print exact click-by-click instructions for Shrey, 
 - **Done when:** in Mattermost, `@ravel check app.py:search` gets Ravel's answer.
 
 ### Phase 6 — Full workflow (Day 2–3)
-- Import the template (Shrey) so sec-triager, sec-fixer and `#security-intake` exist.
+- Import the template (owner) so sec-triager, sec-fixer and `#security-intake` exist.
 - Add a script `scripts/post_findings.py` that posts the 3 bandit findings into
   `#security-intake` (via the protocol or Switch API per docs) so the demo starts the same way every time.
 - Flow to make work end to end:
   1. Findings posted → sec-triager restates → asks ravel.
   2. ravel: 2 UNREACHABLE (dismissed with proof), 1 REACHABLE.
-  3. sec-triager opens `#fix-sqli-search`, adds sec-fixer, ravel, Shrey.
+  3. sec-triager opens `#fix-sqli-search`, adds sec-fixer, ravel and the security owner.
   4. ravel attaches the wiki page for the module as room knowledge.
   5. sec-fixer: branch `fix/sqli-search`, parameterized query, `pytest` passes, asks ravel to verify.
   6. ravel `verify fix/sqli-search search` → no longer reachable + callers list.
-  7. Shrey types "approved" → sec-fixer merges. Anything else → no merge.
+  7. The security owner types "approved" → sec-fixer merges. Anything else → no merge.
   8. sec-triager writes the ledger line in `#security-ledger`.
-- Set roles/permissions so only Shrey can approve (per docs).
+- Set roles/permissions so only the security owner can approve (per docs).
 - Add `scripts/reset_demo.sh`: resets `main` to the 3-finding state and deletes fix branches,
   so the demo can be re-run from scratch.
 - **Done when:** the full flow runs 3 times in a row from `reset_demo.sh` without manual fixes.
 
 ### Phase 7 — Ask Ravel + Discord (Day 3)
 - Confirm `who calls` and `wiki` work in any room.
-- Shrey connects Discord; run the whole flow there.
+- The owner connects Discord; run the whole flow there.
 - **Cut first if late:** stretch goals, then Ask Ravel. Never cut the approval gate or verify step.
 
 ### Phase 8 — Submission polish (Day 4, feature freeze 12 PM IST)

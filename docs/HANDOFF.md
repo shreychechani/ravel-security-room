@@ -2,7 +2,7 @@
 
 You're joining **Ravel Security Room**, our entry for the *Flip the Switch* hackathon
 (Track 1, Best Business Workflow). **Deadline: Nov 7, 2026, 11:59 PM IST. Feature freeze
-12 PM IST Nov 7.** Shrey is the owner and security owner.
+12 PM IST Nov 7.** The project owner is also the **security owner**, the only person who approves merges.
 
 Read in this order:
 1. This file: status, setup, open tasks, rules.
@@ -55,7 +55,7 @@ so each tester runs their own. See ARCHITECTURE §8 for ports.
 
 ## 3. Open tasks
 
-Claim a task by telling Shrey and putting your name in the **Who** column (in your PR).
+Claim a task by telling the project owner and putting your name in the **Who** column (in your PR).
 "Switch?" says whether you need a running Switch server.
 
 | ID | Task | Spec | Switch? | Who | Done when |
@@ -64,12 +64,12 @@ Claim a task by telling Shrey and putting your name in the **Who** column (in yo
 | **T1b** | Wiki generator: build `ravel_adapter/wiki_cache/<module>.md` from `scan.json` (functions, routes, callers, callees, findings) and commit the pages | ARCHITECTURE D3 | No | | `wiki app`, `wiki payments` print useful pages instantly |
 | **T2** | `ravel_adapter/tests/test_handle.py`: parsing, mention stripping, unknown → help; mock `subprocess.run` | PLAN §4.5 | No | | `pytest ravel_adapter/tests -q` green |
 | **T3** | Protocol side: `register.py`, `switch_client.py` (WebSocket loop, pong, reconnect, cursor), `tests/test_switch_client.py` with fake frames | PLAN §3, §4.3, §4.5 | Unit tests: no. Live test: yes | | Fake-frame tests green; then `@ravel check app.py:search` answered in Mattermost |
-| **T4** | `scripts/reset_demo.sh` + tag `demo-base` | PLAN §7 Phase 6.3 | No | | Running it twice leaves `main` with 3 findings, no `fix/*` branches. **Ask Shrey before the first run (`reset --hard`)** |
+| **T4** | `scripts/reset_demo.sh` + tag `demo-base` | PLAN §7 Phase 6.3 | No | | Running it twice leaves `main` with 3 findings, no `fix/*` branches. **Ask the owner before the first run (`reset --hard`)** |
 | **T5** | `scripts/post_findings.py`: post the 3 findings as sec-scanner into `#security-intake` | PLAN §7 Phase 6.2 | Yes | | 3 messages appear, ~2 s apart |
 | **T6** | Switch template + final instructions for sec-triager and sec-fixer (approval gate) | PLAN §5, §6; ARCHITECTURE §5; Q1–Q3 below | Writing: no. Import test: yes | Opus session | Template imports in Console without errors |
-| **T7** | Connect Discord, run the flow there | PLAN §7 Phase 7 | Yes | Shrey | Flow works in Discord |
-| **T8** | Drafts: `docs/BLOG.md`, `docs/VIDEO_SCRIPT.md`, README "How Switch is used" | CLAUDE.md Phase 8 | No | | Drafts reviewed by Shrey |
-| **T9** | Add an MIT `LICENSE` file to the Ravel repo (pyproject says MIT, the file is missing) | — | No | Shrey | File on GitHub |
+| **T7** | Connect Discord, run the flow there | PLAN §7 Phase 7 | Yes | Owner | Flow works in Discord |
+| **T8** | Drafts: `docs/BLOG.md`, `docs/VIDEO_SCRIPT.md`, README "How Switch is used" | CLAUDE.md Phase 8 | No | | Drafts reviewed by the owner |
+| **T9** | Add an MIT `LICENSE` file to the Ravel repo (pyproject says MIT, the file is missing) | — | No | Owner | File on GitHub |
 
 Dependencies: T1 → T2 and T1b. T1 + T3 → live `@ravel`. T3 (register) → T5 and T6 import.
 T1–T6 → Phase 6 dry runs (3 clean runs in a row from `reset_demo.sh`).
@@ -94,10 +94,10 @@ T1–T6 → Phase 6 dry runs (3 clean runs in a row from `reset_demo.sh`).
 - **Never fix finding 1 (SQL injection) on `main`.** The fix happens live, by sec-fixer, in the demo.
   `main` must always scan to exactly 3 findings (B608, B307, B506).
 - **Never commit `.env`**, agent keys, or `.ravel_state.json`. Check `git status` before each commit.
-- Work on a branch (`task/T1-ravel-side`), open a PR to `main`; Shrey merges.
+- Work on a branch (`task/T1-ravel-side`), open a PR to `main`; the owner merges.
 - Python 3.11+, stdlib + `requirements.txt` only. Ravel's deps stay in the Ravel repo (D4).
-  New dependencies need Shrey's OK.
+  New dependencies need the owner's OK.
 - Keep code small and readable; judges must understand it quickly.
 - After finishing a task, add a short entry to `PROGRESS.md` (done / broken / next).
-- Ask Shrey before: pushing to `main`, creating repos, installing global tools, deleting
+- Ask the owner before: pushing to `main`, creating repos, installing global tools, deleting
   files, anything that costs money.
