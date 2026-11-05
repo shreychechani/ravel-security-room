@@ -160,20 +160,36 @@
 **Next**
 - T2 (unit tests for ravel.py), T3 (Switch connection: register, WebSocket loop, send, room documents).
 
-## Phase 5 — T3, Switch side of the adapter (Nov 5) 🟡 code + unit tests done, live test pending
+## Phase 5 — T3, Switch side of the adapter (Nov 5) ✅ live in Mattermost
 
 **Done**
 - `ravel_adapter/switch_client.py`: WebSocket in (`/agents/{id}/connection/ws`, scope=all, filter=addressed),
   pong first on every ping, addressed messages handed to a 2-thread pool, cursor saved after submit,
   resume with `start_from` + `expected_generation`, reconnect backoff 1–30 s (reset after 60 s healthy), stop on
   `taken_over`, `closed`, `refused`, close codes 4400/4401/4403/4409 and handshake 401/403/404.
-  HTTP out: `POST /agents/{id}/message`; operations read from `GET /ops` at startup; `attach wiki` uses
-  `create_room_document` with arguments matched to its schema, falling back to posting the page.
+  HTTP out: `POST /agents/{id}/message`; `attach wiki` calls `connect_to_room` then `create_room_document`
+  (or `update_room_document` if the page exists), falling back to posting the page.
 - `ravel_adapter/register.py`: registers `ravel` (always_on, addressing anyone) or `sec-scanner`
   (session_passive), writes id + key into `.env` (mode 600); 409 → explains, `--overwrite` only on request.
 - `adapter.py` with no arguments now serves; `ravel_adapter/tests/test_switch_client.py`: 10 fake-frame tests pass.
 - `websocket-client==1.9.2` added to requirements (approved Nov 4, PLAN C1).
 - Switch ports unchanged since Nov 4 (api 52120): ports survived at least a Console restart (Q4, partly).
 
+**Live test (Nov 5)**
+- Console 0.40.1 with a server on this Mac has **no Gateway web page and no registration-key screen**
+  (switch-buddy confirmed; a settings page is coming in a later release). Workaround:
+  `ravel_adapter/registration_key.py` logs in to the Gateway API (`/gateway/auth/login`) and calls
+  `POST /gateway/api-keys`. The admin email/password come from the running `switch_core` process's
+  environment; the owner ran that step in their own terminal, so the password never reached chat or logs.
+- `config.py`: with no `SWITCH_URL`, read the API port from Console's `ports.json` (was a wrong 8000 default).
+- Registered `ravel` and `sec-scanner`. Setting addressing with the agent's own key returned **403**;
+  switch-buddy set ravel to `anyone` and added it to `#security-intake`.
+- `@ravel check app.py:search` in Mattermost → correct 🔴 REACHABLE reply in 1.5 s. ✅ Phase 5 done.
+- Real payload: `sender_name` is the plain Mattermost username (`user`), `sender_role: "owner"`; so `@user` replies are right.
+- Restart resumed from the saved cursor with no duplicate reply.
+- `create_room_document` has **no room_id**: it writes to "the connected room". Fixed `attach_document`
+  (connect_to_room first; required fields name, description, instructions, content).
+
 **Next**
-- Owner: create a registration key, put it in `.env`. Then register both agents and run the live test.
+- Live test of `@ravel attach wiki app` and `@ravel who calls process_payment`.
+- `ravel_adapter/README.md` (plain-language explainer). Then T6 import test.

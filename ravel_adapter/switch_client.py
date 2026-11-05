@@ -61,7 +61,6 @@ class SwitchClient:
         self.names = names
         self.state = State(state_path)
         self.pool = ThreadPoolExecutor(max_workers=2)
-        self.ops = {}                   # operation name -> input_schema, read at startup
         self.logged_raw = False
 
     # ---------- HTTP out ----------
@@ -79,13 +78,6 @@ class SwitchClient:
                              timeout=30)
         resp.raise_for_status()
 
-    def load_ops(self):
-        resp = requests.get(f"{self.base_url}/agents/{self.agent_id}/ops",
-                            headers=self._headers(), timeout=30)
-        resp.raise_for_status()
-        self.ops = {name: op.get("input_schema", {})
-                    for name, op in resp.json().get("operations", {}).items()}
-
     def call_op(self, name, args):
         """POST /agents/{id}/ops/{name} with the arguments unwrapped."""
         resp = requests.post(f"{self.base_url}/agents/{self.agent_id}/ops/{name}",
@@ -94,21 +86,27 @@ class SwitchClient:
         return resp.json().get("result")
 
     def attach_document(self, room_id, name, content):
-        """Save a page as a room document (create_room_document). Returns None or a reason."""
-        schema = self.ops.get("create_room_document")
-        if schema is None:
-            return "create_room_document is not available"
-        props = schema.get("properties", {})
-        wanted = {"room_id": room_id, "name": name, "title": name, "content": content,
-                  "body": content, "description": f"Ravel wiki page: {name}"}
-        args = {k: v for k, v in wanted.items() if k in props}
-        missing = [k for k in schema.get("required", []) if k not in args]
-        if missing:
-            return f"create_room_document needs {', '.join(missing)}"
+        """Save a page as a room document. Returns None, or the reason it couldn't.
+
+        Room documents belong to "the connected room", so we connect to the room first
+        (connect_to_room). A name is unique per room: attaching again updates the page.
+        """
+        fields = {"description": f"Ravel wiki page: {name.removeprefix('wiki-')}",
+                  "instructions": "Ravel's map of this module: what it does, who calls each "
+                                  "function, which functions a route reaches, and open findings. "
+                                  "Read it before changing the module.",
+                  "content": content}
         try:
-            self.call_op("create_room_document", args)
+            room = self.call_op("connect_to_room", {"room_id": room_id,
+                                                    "include_general_instructions": False}) or {}
+            old = next((d for d in room.get("documents") or [] if d.get("name") == name), None)
+            if old:
+                self.call_op("update_room_document",
+                             {"document_id": old.get("document_id") or old.get("id"), **fields})
+            else:
+                self.call_op("create_room_document", {"name": name, **fields})
         except requests.HTTPError as err:
-            return f"create_room_document failed ({err.response.status_code})"
+            return f"HTTP {err.response.status_code} {err.response.text[:120]}"
         return None
 
     # ---------- the work, on a pool thread ----------
@@ -209,10 +207,6 @@ class SwitchClient:
             ws.close()
 
     def run_forever(self):
-        try:
-            self.load_ops()
-        except requests.RequestException as err:
-            log.warning("could not read the operations list: %s", err)
         attempt = 0
         while True:
             started = time.monotonic()
