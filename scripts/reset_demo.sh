@@ -41,3 +41,21 @@ if [ -n "$FIX_BRANCHES" ]; then
 else
     echo "No local fix/* branches found."
 fi
+
+# 5. Remove SQLite database and adapter runtime state
+echo "Removing demo database and transient runtime state..."
+rm -f demo-app/demo.db
+rm -f .ravel_state.json
+
+# 6. Re-run scan and verify exactly 3 findings exist
+echo "Verifying scanner baseline findings..."
+./scripts/scan.sh >/dev/null
+
+COUNT=$(python3 -c 'import json; print(len(json.load(open("findings.json"))["results"]))' 2>/dev/null || python -c 'import json; print(len(json.load(open("findings.json"))["results"]))')
+
+if [ "$COUNT" -ne 3 ]; then
+    echo "Error: Expected exactly 3 findings, but found $COUNT." >&2
+    exit 1
+fi
+
+echo "==> Demo reset complete! Baseline confirmed: 3 findings on main."
