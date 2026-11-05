@@ -159,3 +159,21 @@
 
 **Next**
 - T2 (unit tests for ravel.py), T3 (Switch connection: register, WebSocket loop, send, room documents).
+
+## Phase 5 — T3, Switch side of the adapter (Nov 5) 🟡 code + unit tests done, live test pending
+
+**Done**
+- `ravel_adapter/switch_client.py`: WebSocket in (`/agents/{id}/connection/ws`, scope=all, filter=addressed),
+  pong first on every ping, addressed messages handed to a 2-thread pool, cursor saved after submit,
+  resume with `start_from` + `expected_generation`, reconnect backoff 1–30 s (reset after 60 s healthy), stop on
+  `taken_over`, `closed`, `refused`, close codes 4400/4401/4403/4409 and handshake 401/403/404.
+  HTTP out: `POST /agents/{id}/message`; operations read from `GET /ops` at startup; `attach wiki` uses
+  `create_room_document` with arguments matched to its schema, falling back to posting the page.
+- `ravel_adapter/register.py`: registers `ravel` (always_on, addressing anyone) or `sec-scanner`
+  (session_passive), writes id + key into `.env` (mode 600); 409 → explains, `--overwrite` only on request.
+- `adapter.py` with no arguments now serves; `ravel_adapter/tests/test_switch_client.py`: 10 fake-frame tests pass.
+- `websocket-client==1.9.2` added to requirements (approved Nov 4, PLAN C1).
+- Switch ports unchanged since Nov 4 (api 52120): ports survived at least a Console restart (Q4, partly).
+
+**Next**
+- Owner: create a registration key, put it in `.env`. Then register both agents and run the live test.

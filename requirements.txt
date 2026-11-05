@@ -3,3 +3,4 @@ pyyaml==6.0.3
 pytest==9.2.0
 bandit==1.9.4
 requests==2.34.2
+websocket-client==1.9.2
