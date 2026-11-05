@@ -66,3 +66,21 @@ def load_findings(findings_path=None):
     results = data.get("results", [])
     # Filter out findings in tests directory (noise)
     return [r for r in results if "tests/" not in r.get("filename", "") and "/tests/" not in r.get("filename", "")]
+
+
+def format_finding_message(finding):
+    """Format one finding into the exact string expected by sec-triager."""
+    rule = finding.get("test_id", "UNKNOWN")
+    filename = finding.get("filename", "")
+    line = finding.get("line_number", 0)
+    msg = finding.get("issue_text", "").rstrip(".")
+
+    # Normalize path to start with demo-app/
+    rel_path = filename.replace("\\", "/")
+    if rel_path.startswith("./"):
+        rel_path = rel_path[2:]
+    if not rel_path.startswith("demo-app/"):
+        rel_path = f"demo-app/{rel_path}"
+
+    function_name = find_enclosing_function(rel_path, line)
+    return f"@sec-triager New finding {rule} in {rel_path}:{line} ({function_name}): {msg}."
