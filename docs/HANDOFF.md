@@ -24,7 +24,7 @@ Read in this order:
 | 1 Environment | ✅ Scan = 3 findings, pytest 1 pass / 1 fail (intended) |
 | 2 GitHub | ✅ https://github.com/shreychechani/ravel-security-room (MIT) |
 | 3 Switch running | ✅ Local server + Mattermost up, `sec-triager` answers in `#security-intake`. Template + agent instructions written (T6); import test waits for T3 (registering ravel + sec-scanner) |
-| 4 Ravel side of adapter | 🟡 Ravel verified against demo-app (ARCHITECTURE §6). Code not written (T1, T2) |
+| 4 Ravel side of adapter | ✅ T1 + T1b done: all commands answer correctly with no Switch. Tests (T2) open |
 | 5 Switch protocol side | ⬜ (T3) |
 | 6 Full workflow | ⬜ (T4, T5, T6, then dry runs) |
 | 7 Ask Ravel + Discord | ⬜ |
@@ -60,8 +60,8 @@ Claim a task by telling the project owner and putting your name in the **Who** c
 
 | ID | Task | Spec | Switch? | Who | Done when |
 | --- | --- | --- | --- | --- | --- |
-| **T1** | Ravel side of the adapter: `ravel_adapter/config.py` (stdlib `.env` reader), `ravel_adapter/ravel.py` with `check`, `who calls`, `verify`, `wiki`, `help`; chat formatting per the **reply contract** (replies start with `@<asker>`); ignore `tests/` findings; read `@app.route` for the URL | PLAN §4.2, §4.4; ARCHITECTURE §6 (reply contract), D2, D3, D6 | No | | `python ravel_adapter/adapter.py "@ravel check app.py:search"` (and the other 4 commands in PLAN §7 Phase 4) print correct answers |
-| **T1b** | Wiki generator: build `ravel_adapter/wiki_cache/<module>.md` from `scan.json` (functions, routes, callers, callees, findings) and commit the pages | ARCHITECTURE D3 | No | | `wiki app`, `wiki payments` print useful pages instantly |
+| **T1** ✅ | Ravel side of the adapter: `ravel_adapter/config.py` (stdlib `.env` reader), `ravel_adapter/ravel.py` with `check`, `who calls`, `verify`, `wiki`, `help`; chat formatting per the **reply contract** (replies start with `@<asker>`); ignore `tests/` findings; read `@app.route` for the URL | PLAN §4.2, §4.4; ARCHITECTURE §6 (reply contract), D2, D3, D6 | No | | `python ravel_adapter/adapter.py "@ravel check app.py:search"` (and the other 4 commands in PLAN §7 Phase 4) print correct answers |
+| **T1b** ✅ | Wiki generator: build `ravel_adapter/wiki_cache/<module>.md` from `scan.json` (functions, routes, callers, callees, findings) and commit the pages | ARCHITECTURE D3 | No | | `wiki app`, `wiki payments` print useful pages instantly |
 | **T2** | `ravel_adapter/tests/test_handle.py`: parsing, mention stripping, unknown → help; mock `subprocess.run` | PLAN §4.5 | No | | `pytest ravel_adapter/tests -q` green |
 | **T3** | Protocol side: `register.py`, `switch_client.py` (WebSocket loop, pong, reconnect, cursor), `tests/test_switch_client.py` with fake frames | PLAN §3, §4.3, §4.5 | Unit tests: no. Live test: yes | | Fake-frame tests green; then `@ravel check app.py:search` answered in Mattermost |
 | **T4** | `scripts/reset_demo.sh` + tag `demo-base` | PLAN §7 Phase 6.3 | No | | Running it twice leaves `main` with 3 findings, no `fix/*` branches. **Ask the owner before the first run (`reset --hard`)** |

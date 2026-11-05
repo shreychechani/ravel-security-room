@@ -27,7 +27,7 @@ every correction).
 | 1 Environment | ✅ Done (Python 3.14, venv, scan = 3 findings, pytest 1 pass / 1 fail, app ok) |
 | 2 GitHub | ✅ Done: https://github.com/shreychechani/ravel-security-room (public, MIT) |
 | 3 Switch up | ✅ Server + Mattermost up, sec-triager replies. Template/instructions (step 6) still open |
-| 4 Ravel side | 🟡 Ravel verified on demo-app (Nov 5); decisions D2–D4 in `docs/ARCHITECTURE.md` §7. Code not started |
+| 4 Ravel side | ✅ T1/T1b done Nov 5 (`ravel_adapter/config.py`, `ravel.py`, `wiki_cache/`). T2 tests open |
 | 5–8 | Not started |
 
 **Nov 5 update (Opus):** the live task board is now `docs/HANDOFF.md` §3 (tasks T1–T9, for

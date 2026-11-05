@@ -139,3 +139,23 @@
 
 **Next**
 - Import test needs T3 (register ravel + sec-scanner). Delete the Phase 3 test agent/room first.
+
+## Phase 4 — T1 + T1b, Ravel side of the adapter (Nov 5) ✅
+
+**Done**
+- `ravel_adapter/config.py`: stdlib `.env` reader; env vars win; relative paths resolve from the repo root.
+- `ravel_adapter/ravel.py`: `check`, `verify`, `who calls`, `wiki`, `attach wiki`, `help`. One Ravel run per
+  command (`uv run --project $RAVEL_DIR ravel scan … --json`), replies follow the ARCHITECTURE §6 contract
+  (start with `@<asker>`), `tests/` findings ignored, route URLs read from `@app.route`. `handle()` never raises.
+- `verify` scans the branch in a temporary `git worktree` (removed afterwards; checkout never moves),
+  rejects branch names that could be git options, and compares against the current branch (rule D2).
+- Wiki pages are built from the call graph (app code only, no tests or library calls); committed fallback
+  pages in `ravel_adapter/wiki_cache/` (`python ravel_adapter/ravel.py --build-wiki`).
+- `adapter.py` is now the entry point: local test mode; the Switch connection is T3. Old SSE code removed.
+- Acceptance (no Switch): check app.py:search → 🔴 REACHABLE, Path GET /api/search → search_view() → search();
+  eval_expr and parse → 🟢 UNREACHABLE; who calls process_payment → checkout_view, retry_job; wiki app OK.
+  verify on a scratch clone: real fix → ✅ FIX VERIFIED; unchanged branch → ❌ STILL REACHABLE; missing
+  branch → clean error. `main` still 3 findings, pytest 1 fail / 1 pass.
+
+**Next**
+- T2 (unit tests for ravel.py), T3 (Switch connection: register, WebSocket loop, send, room documents).
