@@ -193,3 +193,19 @@
 **Next**
 - Live test of `@ravel attach wiki app` and `@ravel who calls process_payment`.
 - `ravel_adapter/README.md` (plain-language explainer). Then T6 import test.
+
+## Phase 6 prep — T2, T4, T5 merged from teammates (Nov 6)
+
+**Done**
+- Pulled PRs #1–#3: `test_handle.py` (T2), `reset_demo.sh` + `demo-base` tag (T4), `post_findings.py` (T5).
+  106 adapter tests pass; scan = 3 findings; demo pytest 1 fail / 1 pass; post_findings dry run prints 3 lines.
+- Fix: `reset_demo.sh` ran `git reset --hard demo-base` with the tag behind `main`, which would have dropped
+  the merged T2/T4/T5 commits. It now refuses when there are uncommitted changes outside `demo-app/`, when
+  `main` doesn't contain the tag, or when `main` changed files outside `demo-app/` since the tag; it tells you to
+  re-tag. It no longer deletes `.ravel_state.json`. Real-run tests in throwaway repos (fix undone, fix branches
+  deleted, idempotent, three refusals). Checked on a scratch clone: refuses today, works after re-tagging.
+- Fix: `post_findings.py` matched only a room named `security-intake`; Switch names adopted channels
+  `Mattermost: security-intake`. Now both match (test added).
+
+**Next**
+- Owner: re-tag `demo-base` on the latest `main` and push the tag. Then T6 import test.

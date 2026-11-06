@@ -79,6 +79,18 @@ class TestPostFindingsLoadingAndPosting:
         assert room_id == "room-2"
 
     @patch("requests.post")
+    def test_get_room_id_matches_adopted_channel_name(self, mock_post):
+        # Real list_rooms result for a room Switch adopted from a Mattermost channel
+        mock_post.return_value = MagicMock(
+            status_code=200,
+            json=lambda: {"result": [
+                {"room_id": "room-0", "name": "Mattermost: security-intake-old"},
+                {"room_id": "room-3", "name": "Mattermost: security-intake"},
+            ]}
+        )
+        assert get_room_id("http://fake", "agent-1", "key", "security-intake") == "room-3"
+
+    @patch("requests.post")
     def test_get_room_id_not_found_raises(self, mock_post):
         mock_post.return_value = MagicMock(
             status_code=200,

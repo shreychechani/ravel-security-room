@@ -91,6 +91,15 @@ import time
 import requests
 
 
+def room_matches(name, room_name):
+    """True for "security-intake", "#security-intake" and "Mattermost: security-intake".
+
+    Switch names a room it adopted from a channel "<Platform>: <channel>".
+    """
+    name, wanted = name.strip().lstrip("#"), room_name.strip().lstrip("#")
+    return name == wanted or name.endswith(f": {wanted}") or name.endswith(f": #{wanted}")
+
+
 def get_room_id(base_url, agent_id, api_key, room_name="security-intake"):
     """Find the ID of the intake room using the list_rooms operation."""
     headers = {"Authorization": f"Bearer {api_key}"}
@@ -100,7 +109,7 @@ def get_room_id(base_url, agent_id, api_key, room_name="security-intake"):
     rooms = resp.json().get("result") or []
     for r in rooms:
         name = r.get("name") or r.get("display_name") or ""
-        if name.strip("#") == room_name.strip("#"):
+        if room_matches(name, room_name):
             return r.get("id") or r.get("room_id")
     raise ValueError(f"Room '{room_name}' not found among rooms: {[r.get('name') for r in rooms]}")
 
