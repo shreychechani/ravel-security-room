@@ -86,8 +86,11 @@ T1–T6 → Phase 6 dry runs (3 clean runs in a row from `reset_demo.sh`).
    (channel name → Rename Channel) if you want to reuse its name.
 2. Console → **Templates** → delete the old template, then **Import template** →
    `switch/security-room.template.yaml` (version 2). **Use**.
-3. **Folder of your ravel-security-room clone:** pick it with **Choose…** (typing it can
-   double the path, and sec-fixer then can't start). Leave the rest. Select **Create all**.
+3. **Folder of your ravel-security-room clone:** the box starts with the text `{repo_dir}`.
+   Clear it (Cmd+A, Delete), paste the full path, and check sec-fixer's **Directory** in the
+   preview (a leftover makes a doubled path, and sec-fixer then can't start). Expand
+   **Show the resolved document**: sec-fixer's instructions must say `@<you> please review`,
+   not `@{$creator}`. Leave the rest. Select **Create all**.
    The security owner is you, the person running the template (`{$creator}`).
 4. Expect: `#security-intake` (sec-triager, ravel, sec-scanner, you) and `#security-ledger`.
    sec-triager answers the kickoff **and names the security owner**: if it says

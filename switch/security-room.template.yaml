@@ -1,6 +1,9 @@
 # Ravel Security Room — Switch group template (format: version 2)
 # Spec: https://github.com/sandbox-quantum/switch/blob/main/docs/TEMPLATES.md
 #
+# Resource keys (sec_triager, room_intake, ...) must not appear in any text: Console
+# replaces a key word everywhere when it resolves the template.
+#
 # Creates: agents sec-triager + sec-fixer, rooms #security-intake + #security-ledger.
 # Before importing: register the custom agents `ravel` and `sec-scanner`
 # (python -m ravel_adapter.register ...). A template run stops if an agent it
@@ -17,7 +20,7 @@ params:
   repo_dir:
     type: directory
     label: Folder of your ravel-security-room clone
-    description: Pick it with Choose… (typing can double the path). sec-fixer branches, patches and runs tests here.
+    description: Clear the box first (Cmd+A, Delete), then paste the full path. Check sec-fixer's Directory in the preview. sec-fixer branches, patches and runs tests here.
   bridge:
     type: bridge
     default: [Discord, Mattermost, $first]
@@ -31,7 +34,7 @@ params:
     input: advanced
 
 resources:
-  triager:
+  sec_triager:
     type: agent
     name: sec-triager
     display_name: sec-triager
@@ -96,7 +99,7 @@ resources:
         If something unexpected happens, say so in the room and mention
         @{$creator} instead of improvising.
 
-  fixer:
+  sec_fixer:
     type: agent
     name: sec-fixer
     display_name: sec-fixer
@@ -157,21 +160,21 @@ resources:
         branches, or change files outside demo-app/. If something unexpected
         happens, stop and tell @{$creator}.
 
-  security:
+  grp_security:
     type: group
     name: Security
     description: AI security triage with reachability proof and a human approval gate
     links:
-      - {from: intake, to: ledger, label: decisions}
+      - {from: room_intake, to: room_ledger, label: decisions}
 
-  intake:
+  room_intake:
     type: room
-    group: security
+    group: grp_security
     name: security-intake
     description: Every security finding lands here and gets triaged
     bridge: "{bridge}"
     channel_type: channel_public
-    agents: [triager, ravel, sec-scanner]
+    agents: [sec_triager, ravel, sec-scanner]
     users: ["{$creator}"]
     instructions: |
       Security findings land here. The security owner is @{$creator}.
@@ -201,14 +204,14 @@ resources:
       Reply in one line: that you are ready, and the @-name of the security owner
       exactly as your instructions give it. Then wait for findings.
 
-  ledger:
+  room_ledger:
     type: room
-    group: security
+    group: grp_security
     name: security-ledger
     description: One line per security decision, an audit trail
     bridge: "{bridge}"
     channel_type: channel_public
-    agents: [triager]
+    agents: [sec_triager]
     users: ["{$creator}"]
     instructions: |
       Audit trail. sec-triager posts exactly one line per security decision.
