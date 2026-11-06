@@ -4,7 +4,13 @@
 set -e
 cd "$(dirname "$0")/.."
 
-# Use the project's virtualenv if it exists, so this works without `source .venv/bin/activate`.
+if command -v python3 >/dev/null 2>&1; then
+    exec python3 scripts/scan.py "$@"
+elif command -v python >/dev/null 2>&1; then
+    exec python scripts/scan.py "$@"
+fi
+
+# Fallback direct bandit invocation
 if [ -x .venv/bin/bandit ]; then BANDIT=.venv/bin/bandit; else BANDIT=bandit; fi
 command -v "$BANDIT" >/dev/null || { echo "bandit not found: run pip install -r requirements.txt" >&2; exit 2; }
 

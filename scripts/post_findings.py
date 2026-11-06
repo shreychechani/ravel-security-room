@@ -44,14 +44,19 @@ def load_findings(findings_path=None):
     """Read findings.json or run scanner if findings.json does not exist."""
     path = Path(findings_path) if findings_path else ROOT / "findings.json"
     if not path.exists():
-        scan_script = ROOT / "scripts" / "scan.sh"
-        try:
-            if os.name != "nt":
-                subprocess.run([str(scan_script)], check=False, cwd=ROOT, capture_output=True)
-            else:
-                subprocess.run(["bash", str(scan_script)], check=False, cwd=ROOT, capture_output=True)
-        except Exception:
-            pass
+        scan_py = ROOT / "scripts" / "scan.py"
+        if scan_py.exists():
+            subprocess.run([sys.executable, str(scan_py), "-o", str(path), "-q"],
+                           check=False, cwd=ROOT, capture_output=True)
+        else:
+            scan_script = ROOT / "scripts" / "scan.sh"
+            try:
+                if os.name != "nt":
+                    subprocess.run([str(scan_script)], check=False, cwd=ROOT, capture_output=True)
+                else:
+                    subprocess.run(["bash", str(scan_script)], check=False, cwd=ROOT, capture_output=True)
+            except Exception:
+                pass
 
     if not path.exists():
         # Fallback: run bandit directly via python
