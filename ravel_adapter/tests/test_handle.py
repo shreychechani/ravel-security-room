@@ -388,8 +388,13 @@ class TestHandleVerify:
         reply = handle("@ravel verify --bad-flag search", sender="fixer")
         assert "Ravel error: not a valid branch name" in reply.text
 
+    @patch("subprocess.run")
+    @patch("ravel_adapter.ravel._git")
+    @patch("ravel_adapter.ravel.routes_in", return_value={})
     @patch("ravel_adapter.ravel.scan", side_effect=_mock_scan)
-    def test_verify_nothing_to_verify(self, mock_scan):
+    def test_verify_nothing_to_verify(self, mock_scan, mock_routes, mock_git, mock_subproc):
+        top = str(Path(__file__).resolve().parents[2])
+        mock_git.side_effect = [top, "base-sha", ""]  # rev-parse, merge-base, worktree add (base)
         reply = handle("@ravel verify fix/something nonexistent", sender="fixer")
         assert "⚪ UNKNOWN · nothing to verify" in reply.text
 
@@ -398,7 +403,7 @@ class TestHandleVerify:
     def test_verify_branch_not_found(self, mock_git, mock_scan):
         mock_git.side_effect = [
             str(Path(__file__).resolve().parents[2]),  # rev-parse --show-toplevel
-            RavelError("git worktree add failed"),      # worktree add
+            RavelError("git merge-base failed"),        # merge-base: no such branch
         ]
         reply = handle("@ravel verify fix/missing search", sender="fixer")
         assert "Ravel error: branch fix/missing not found" in reply.text
@@ -409,7 +414,7 @@ class TestHandleVerify:
     @patch("ravel_adapter.ravel.scan")
     def test_verify_success(self, mock_scan, mock_routes, mock_git, mock_subproc):
         top = str(Path(__file__).resolve().parents[2])
-        mock_git.side_effect = [top, ""]  # rev-parse, worktree add
+        mock_git.side_effect = [top, "base-sha", "", ""]  # rev-parse, merge-base, 2× worktree add
         # First scan = before (has B608), Second scan = after (fix verified)
         after_report = {
             "findings": [
@@ -437,13 +442,32 @@ class TestHandleVerify:
     @patch("ravel_adapter.ravel.scan")
     def test_verify_still_reachable(self, mock_scan, mock_routes, mock_git, mock_subproc):
         top = str(Path(__file__).resolve().parents[2])
-        mock_git.side_effect = [top, ""]
+        mock_git.side_effect = [top, "base-sha", "", ""]
         mock_scan.side_effect = [DEMO_SCAN_REPORT, DEMO_SCAN_REPORT]  # unchanged!
 
         reply = handle("@ravel verify fix/sqli-search search", sender="fixer")
         assert "❌ STILL REACHABLE on fix/sqli-search" in reply.text
         assert "B608" in reply.text
         assert "Path: GET /api/search → search_view() → search()" in reply.text
+
+    @patch("subprocess.run")
+    @patch("ravel_adapter.ravel._git")
+    @patch("ravel_adapter.ravel.routes_in", return_value={})
+    @patch("ravel_adapter.ravel.scan")
+    def test_verify_compares_branch_start_not_current_checkout(self, mock_scan, mock_routes,
+                                                               mock_git, mock_subproc):
+        """sec-fixer leaves the fix branch checked out; 'before' must still be the unfixed code."""
+        top = str(Path(__file__).resolve().parents[2])
+        mock_git.side_effect = [top, "base-sha", "", ""]
+        mock_scan.side_effect = [DEMO_SCAN_REPORT, {"findings": [], "graph_view": {"edges": []}}]
+
+        reply = handle("@ravel verify fix/sqli-search search", sender="fixer")
+
+        assert "✅ FIX VERIFIED" in reply.text
+        merge_base = mock_git.call_args_list[1].args
+        assert merge_base[1:] == ("merge-base", "main", "fix/sqli-search")
+        worktree_refs = [c.args[-1] for c in mock_git.call_args_list[2:]]
+        assert worktree_refs == ["base-sha", "fix/sqli-search"]   # before = base, after = branch
 
 
 # ── handle() — wiki and attach wiki ──────────────────────────────────

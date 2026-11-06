@@ -208,8 +208,26 @@ def who_calls(function):
     return "\n".join(lines)
 
 
+BASE_BRANCH = "main"
+
+
+def _scan_at(top, inside, ref, label):
+    """Scan the demo app as it is at a git ref, in a temporary worktree (never `git checkout`).
+
+    sec-fixer works in the same clone and switches branches, so what is checked out
+    right now says nothing about either side of the fix.
+    """
+    worktree = top / ".ravel-worktrees" / f"{label.replace('/', '_')}-{uuid.uuid4().hex[:6]}"
+    _git(top, "worktree", "add", "--detach", str(worktree), ref)
+    try:
+        return scan(worktree / inside), routes_in(worktree / inside)
+    finally:
+        subprocess.run(["git", "-C", str(top), "worktree", "remove", "--force", str(worktree)],
+                       capture_output=True)
+
+
 def verify(branch, function):
-    """Scan the fix branch in a temporary git worktree (never `git checkout`)."""
+    """Compare the commit the fix branch started from with the branch's tip."""
     function = function.strip().removesuffix("()")
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]*", branch):
         raise RavelError(f"not a valid branch name: {branch!r}")
@@ -217,25 +235,19 @@ def verify(branch, function):
     demo = config.DEMO_REPO_PATH
     top = Path(_git(demo, "rev-parse", "--show-toplevel"))
     inside = demo.relative_to(top)
-
-    before = [f for f in real_findings(scan(demo)) if f["node_name"] == function]
-    if not before:
-        return f"⚪ UNKNOWN · nothing to verify: no finding for {function}() on the current branch"
-    rules = sorted({f["rule_id"] for f in before})
-
-    worktree = top / ".ravel-worktrees" / f"{branch.replace('/', '_')}-{uuid.uuid4().hex[:6]}"
     try:
-        _git(top, "worktree", "add", "--detach", str(worktree), branch)
+        base = _git(top, "merge-base", BASE_BRANCH, branch)
     except RavelError:
         raise RavelError(f"branch {branch} not found") from None
-    try:
-        after_dir = worktree / inside
-        report = scan(after_dir)
-        routes = routes_in(after_dir)
-    finally:
-        subprocess.run(["git", "-C", str(top), "worktree", "remove", "--force", str(worktree)],
-                       capture_output=True)
 
+    before_report, _ = _scan_at(top, inside, base, "base")
+    before = [f for f in real_findings(before_report) if f["node_name"] == function]
+    if not before:
+        return (f"⚪ UNKNOWN · nothing to verify: no finding for {function}() "
+                f"where {branch} started from {BASE_BRANCH}")
+    rules = sorted({f["rule_id"] for f in before})
+
+    report, routes = _scan_at(top, inside, branch, branch)
     after = real_findings(report)
     still = [f for f in after if f["node_name"] == function and f["rule_id"] in rules]
     reachable = [f for f in after if f["static_evidence"]["reachable"] == "reachable"]
