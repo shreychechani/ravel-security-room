@@ -1,32 +1,37 @@
-"""Tests for scripts/reset_demo.sh: static checks, plus real runs in throwaway git repos."""
+"""Tests for scripts/reset_demo.py: static checks, plus real runs in throwaway git repos."""
+import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts" / "reset_demo.sh"
+SCRIPT_PY = ROOT / "scripts" / "reset_demo.py"
+SCRIPT_SH = ROOT / "scripts" / "reset_demo.sh"
 
-# Stands in for scripts/scan.sh in the throwaway repo: always "finds" 3 issues.
-FAKE_SCAN = """#!/usr/bin/env bash
-echo '{"results": [{}, {}, {}]}' > findings.json
+# Stands in for scripts/scan.py in the throwaway repo: always "finds" 3 issues.
+FAKE_SCAN_PY = """\
+import json, sys
+out = sys.argv[sys.argv.index("-o") + 1] if "-o" in sys.argv else "findings.json"
+with open(out, "w") as f:
+    json.dump({"results": [{}, {}, {}]}, f)
 """
 
 
 class TestResetDemoScript:
-    def test_script_exists_and_is_nonempty(self):
-        assert SCRIPT.exists()
-        content = SCRIPT.read_text()
-        assert "git checkout --force main" in content
+    def test_python_script_exists_and_is_nonempty(self):
+        assert SCRIPT_PY.exists()
+        content = SCRIPT_PY.read_text()
         assert "demo-base" in content
-        assert "worktree prune" in content
-        assert "demo-app/demo.db" in content
-        assert "./scripts/scan.sh" in content
+        assert "worktree" in content
+        assert "demo-app" in content
 
-    def test_script_declares_strict_mode(self):
-        first_lines = SCRIPT.read_text().splitlines()[:10]
-        assert any("set -euo pipefail" in line for line in first_lines)
+    def test_bash_script_exists_and_delegates(self):
+        assert SCRIPT_SH.exists()
+        content = SCRIPT_SH.read_text()
+        assert "reset_demo.py" in content
 
     def test_tag_demo_base_exists_in_git(self):
         result = subprocess.run(["git", "tag", "-l", "demo-base"],
@@ -50,17 +55,16 @@ def commit(repo, path, text, message):
 @pytest.fixture
 def repo(tmp_path):
     """A tiny repo shaped like ours: demo-app/, scripts/, main tagged demo-base."""
-    if shutil.which("git") is None or shutil.which("bash") is None:
-        pytest.skip("needs git and bash")
+    if shutil.which("git") is None:
+        pytest.skip("needs git")
     repo = tmp_path / "repo"
     repo.mkdir()
     git(repo, "init", "-q", "-b", "main")
     git(repo, "config", "user.email", "test@example.com")
     git(repo, "config", "user.name", "test")
     (repo / "scripts").mkdir()
-    shutil.copy(SCRIPT, repo / "scripts" / "reset_demo.sh")
-    (repo / "scripts" / "scan.sh").write_text(FAKE_SCAN)
-    (repo / "scripts" / "scan.sh").chmod(0o755)
+    shutil.copy(SCRIPT_PY, repo / "scripts" / "reset_demo.py")
+    (repo / "scripts" / "scan.py").write_text(FAKE_SCAN_PY)
     (repo / ".gitignore").write_text("findings.json\n")
     commit(repo, "demo-app/app.py", "query = 'unsafe'\n", "baseline")
     git(repo, "add", ".")
@@ -70,7 +74,7 @@ def repo(tmp_path):
 
 
 def run_reset(repo):
-    return subprocess.run(["bash", "scripts/reset_demo.sh"], cwd=repo,
+    return subprocess.run([sys.executable, "scripts/reset_demo.py"], cwd=repo,
                           capture_output=True, text=True)
 
 
@@ -105,13 +109,13 @@ def test_refuses_when_main_has_real_work_after_the_tag(repo):
 
 
 def test_refuses_with_uncommitted_changes_outside_demo_app(repo):
-    (repo / "scripts" / "scan.sh").write_text(FAKE_SCAN + "# edited\n")
+    (repo / "scripts" / "scan.py").write_text(FAKE_SCAN_PY + "# edited\n")
 
     result = run_reset(repo)
 
     assert result.returncode == 1
     assert "uncommitted changes" in result.stderr
-    assert (repo / "scripts" / "scan.sh").read_text().endswith("# edited\n")
+    assert (repo / "scripts" / "scan.py").read_text().endswith("# edited\n")
 
 
 def test_refuses_when_main_does_not_contain_the_tag(repo):
