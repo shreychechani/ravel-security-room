@@ -90,11 +90,11 @@ T1–T6 → Phase 6 dry runs (3 clean runs in a row from `reset_demo.sh`).
    Clear it (Cmd+A, Delete), paste the full path, and check sec-fixer's **Directory** in the
    preview (a leftover makes a doubled path, and sec-fixer then can't start). Expand
    **Show the resolved document**: sec-fixer's instructions must say `@<you> please review`,
-   not `@{$creator}`. Leave the rest. Select **Create all**.
-   The security owner is you, the person running the template (`{$creator}`).
+   not `@{security_owner}`. **Your chat username (no @):** your username in the messaging
+   app (e.g. `user`), not your Switch account name. Leave the rest. Select **Create all**.
 4. Expect: `#security-intake` (sec-triager, ravel, sec-scanner, you) and `#security-ledger`.
    sec-triager answers the kickoff **and names the security owner**: if it says
-   `{$creator}` or nothing, stop, the approval gate isn't wired.
+   `{security_owner}`, `Admin` or nothing, stop: the approval gate isn't wired.
 
 **Run Ravel from its own checkout during demos.** sec-fixer switches branches in the repo
 folder, so start the adapter from a separate worktree of `main`, e.g.
