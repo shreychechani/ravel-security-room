@@ -80,15 +80,23 @@ T1–T6 → Phase 6 dry runs (3 clean runs in a row from `reset_demo.sh`).
 
 ## 4. Import the template (`ravel` and `sec-scanner` must be registered, and `adapter.py` running)
 
-1. **Remove the Phase 3 test setup** so names don't clash: in Switch Console, delete the
-   hand-made `sec-triager` agent (Your Agents → sec-triager) and the test room
-   `security-intake` (archive its channel when asked).
-2. Console → **Templates** → **Import template** → paste `switch/security-room.template.yaml`.
-   Fix any warning it shows, then **Use**.
-3. Fill in: **Security owner** = your chat username; **Folder** = full path of your
-   ravel-security-room clone. Leave the rest. Select **Create all**.
-4. Expect: `#security-intake` (with sec-triager, ravel, sec-scanner, you, a
-   `triage-playbook` room document) and `#security-ledger`. sec-triager answers the kickoff.
+1. **Remove anything from an earlier import** so names don't clash: in Switch Console delete
+   the agents `sec-triager` and `sec-fixer`, and the rooms `security-intake`,
+   `security-ledger` and any `fix-*` room. In Mattermost, rename an old channel's URL first
+   (channel name → Rename Channel) if you want to reuse its name.
+2. Console → **Templates** → delete the old template, then **Import template** →
+   `switch/security-room.template.yaml` (version 2). **Use**.
+3. **Folder of your ravel-security-room clone:** pick it with **Choose…** (typing it can
+   double the path, and sec-fixer then can't start). Leave the rest. Select **Create all**.
+   The security owner is you, the person running the template (`{$creator}`).
+4. Expect: `#security-intake` (sec-triager, ravel, sec-scanner, you) and `#security-ledger`.
+   sec-triager answers the kickoff **and names the security owner**: if it says
+   `{$creator}` or nothing, stop, the approval gate isn't wired.
+
+**Run Ravel from its own checkout during demos.** sec-fixer switches branches in the repo
+folder, so start the adapter from a separate worktree of `main`, e.g.
+`git worktree add --detach ../ravel-run main`, with `.env` linked in and
+`RAVEL_DIR` set to an absolute path.
 
 ## 5. Open questions
 

@@ -599,3 +599,9 @@ class TestWikiInternals:
         assert (fake_cache / "app.md").exists()
         content = (fake_cache / "app.md").read_text()
         assert "📄 Wiki · app.py" in content
+
+
+def test_only_the_first_line_is_the_command():
+    reply = handle("@ravel attach wiki app\n@sec-fixer Fix B608 in demo-app/app.py", sender="sec-triager")
+    assert reply.text.startswith("@sec-triager 📄 Attached wiki: app")
+    assert reply.document[0] == "wiki-app"

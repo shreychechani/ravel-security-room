@@ -89,3 +89,16 @@ def test_resume_url_carries_cursor_and_generation(client):
     url = client.ws_url()
     assert url.startswith("ws://127.0.0.1:9/agents/agent-1/connection/ws?")
     assert "start_from=7" in url and "expected_generation=2" in url and "filter=addressed" in url
+
+
+def test_mention_further_in_is_not_a_command(client):
+    body = "@sec-fixer Ravel's verify is fixed. Please run @ravel verify fix/sqli-search search"
+    client.on_frame(message(15, body=body, sender="user"), lambda f: None)
+    assert client.pool.jobs == []
+    assert client.state.cursor == 15
+
+
+def test_command_with_trailing_lines_is_still_a_command(client):
+    body = "@ravel attach wiki app\n@sec-fixer Fix B608 in demo-app/app.py"
+    client.on_frame(message(16, body=body), lambda f: None)
+    assert client.pool.jobs == [("room-1", "sec-triager", body)]

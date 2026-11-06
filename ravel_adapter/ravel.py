@@ -378,8 +378,9 @@ def strip_mention(text, names=("ravel",)):
 
 
 def handle(text, sender="you", names=("ravel",)):
-    """One chat message -> one Reply. Never raises."""
-    words = strip_mention(text, names).split()
+    """One chat message -> one Reply. Never raises. Only the first line is the command."""
+    lines = strip_mention(text, names).splitlines()
+    words = lines[0].split() if lines else []
     verb = words[0].lower() if words else "help"
     try:
         if verb == "check" and len(words) == 2:

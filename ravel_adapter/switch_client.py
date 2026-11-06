@@ -167,6 +167,12 @@ class SwitchClient:
         if frame.get("event") == "message":
             self.on_message(frame)
 
+    def is_command(self, body):
+        """A command starts with @ravel. A message that only mentions ravel further in,
+        e.g. "@sec-fixer ... then ask @ravel verify ...", is for someone else."""
+        first = body.lstrip().split(maxsplit=1)
+        return bool(first) and first[0].lower().rstrip(":,") in {f"@{n}" for n in self.names}
+
     def on_message(self, frame):
         data = frame.get("data", {})
         payload = data.get("payload", {})
@@ -174,8 +180,9 @@ class SwitchClient:
             log.info("first message payload: %s", json.dumps(payload)[:500])
             self.logged_raw = True
         sender_name = payload.get("sender_name") or "someone"
-        if payload.get("addressed") and sender_name.lower() not in self.names:
-            body = payload.get("body", "")
+        body = payload.get("body", "")
+        if (payload.get("addressed") and sender_name.lower() not in self.names
+                and self.is_command(body)):
             log.info("%s %s: %s", data.get("room_id", "?")[:8], sender_name, body[:60])
             self.pool.submit(self.answer, data.get("room_id"), sender_name, body)
         # Advance after submitting, so a slow command never holds up pings.

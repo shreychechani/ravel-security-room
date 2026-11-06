@@ -209,3 +209,32 @@
 
 **Next**
 - Owner: re-tag `demo-base` on the latest `main` and push the tag. Then T6 import test.
+
+## Phase 6 — T6 import + dry run 1 (Nov 6) ✅ full flow ran end to end, with fixes
+
+**Done**
+- Template imported (after adding `instructions` to the room document). Agents and rooms created.
+- Dry run 1: 3 findings posted → sec-triager checked all 3 with ravel → 2 dismissed → `#fix-sqli-search`
+  opened, wiki attached → sec-fixer fixed on `fix/sqli-search`, pytest 2 passed → ravel ✅ FIX VERIFIED →
+  owner typed `@sec-fixer approved` → merged (`b596b33`) → ledger ✅ line. Then `reset_demo.sh` restored
+  3 findings, kept every non-demo commit, deleted the fix branch.
+
+**Broke, and fixed**
+- sec-fixer's folder came out doubled (`<repo>/Users/.../<repo>`), so it never started. Fixed by hand on
+  its page (managed agents can change Directory); template hint now says use **Choose…**.
+- `verify` scanned the current checkout as "before"; sec-fixer had the fix branch checked out → ⚪ UNKNOWN.
+  Now "before" = `git merge-base main <branch>`, both sides in temporary worktrees. Ravel now runs from
+  its own worktree of `main` so sec-fixer's branch switches can't touch its code.
+- **Approval gate not wired:** version 1 left `{security_owner}` literal in both agents' instructions.
+  Template rewritten in **version 2** (placeholders filled everywhere, per the server's template guide);
+  security owner = `{$creator}` (the person who runs it). Server-side `save_template` check: 0 warnings.
+  Room document dropped (v2 rooms have no `docs:`); the playbook is in the room instructions instead.
+- Ravel answered a message that only mentioned it mid-sentence; now only messages starting with `@ravel`
+  are commands, and only the first line is read. sec-triager told to send one recipient per message.
+- `reset_demo.sh` wasn't executable in git; fixed.
+
+**Open**
+- Ravel posts as "admin" in Mattermost (no bot account for an API-registered agent?). Asking switch-buddy.
+
+**Next**
+- Owner: delete agents + rooms + old template, import v2, check the kickoff names the owner. Dry run 2.
