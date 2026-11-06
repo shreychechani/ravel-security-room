@@ -169,6 +169,9 @@ rooms:
     docs:
       - name: triage-playbook
         description: How findings are triaged, fixed and approved in this team
+        instructions: |
+          Follow this playbook for every security finding in this room: who does
+          which step, what ravel's verdicts mean, and the exact approval rule.
         content: |
           # Triage playbook
 
