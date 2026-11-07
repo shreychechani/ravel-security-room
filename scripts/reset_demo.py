@@ -178,4 +178,10 @@ def reset_demo():
 
 
 if __name__ == "__main__":
+    import argparse
+    # Parse arguments first, so --help (or a typo) never triggers a real reset
+    argparse.ArgumentParser(
+        description="Reset main to the demo-base tag (3 findings) and delete local fix/* branches. "
+                    "Refuses if that would drop any work outside demo-app/.",
+    ).parse_args()
     reset_demo()
