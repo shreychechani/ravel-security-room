@@ -22,6 +22,21 @@ owner types `@sec-fixer approved`.
   → 1 human "approved" in chat          → merged, and logged in #security-ledger
 ```
 
+### For judges
+
+| Criterion | Where to look |
+| --- | --- |
+| **Use of Switch** (is it central?) | [How Switch is used](#how-switch-is-used): rooms created per finding, four agents, addressing as the approval gate, room knowledge, our own Agent Protocol client. Without Switch there is no chat room, no agent hand-off and no gate |
+| **Technical execution** (can you clone and run it?) | [Quickstart](#quickstart): Part A runs in about 5 minutes with no Switch (Ravel's verdicts plus an offline run of all 8 steps); Part B is the live flow. 136 tests: `pytest ravel_adapter/tests -q` |
+| **Creativity and impact** | [The problem](#the-problem): security-alert overload from AI-written code, answered with proof instead of guesses, and a human keeps the final say |
+| **Presentation** | The demo video above, the [walkthrough](#what-happens-in-the-demo), and the [architecture](#architecture) diagram |
+
+**Built during the hackathon (Nov 4 to 7):** everything in this repository: the Switch template and both
+agents' instructions, the `ravel` agent's Switch Agent Protocol client (`ravel_adapter/`), the scanner and demo
+scripts, the demo app, and the tests. **Brought in:** [Ravel](https://github.com/shreychechani/Ravel), our existing
+call-graph and reachability tool, used as a library (the rules allow existing agents, libraries and templates), plus
+bandit and Claude Code.
+
 ---
 
 ## The problem
