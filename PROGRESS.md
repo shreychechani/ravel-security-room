@@ -260,3 +260,24 @@
 **Next**
 - Owner: push, then `git push -f origin demo-base`. Finish dry run 2, then dry run 3; T7 Discord; record.
 - Fresh-clone check of the README quickstart.
+
+## Phase 7 — Discord (Nov 7) ✅ full flow ran on Discord
+
+**Done**
+- Discord bot + server created, connected in Console (named `Discord`), account linked ("This is me").
+- Template re-imported with Bridge = Discord, security owner = the Discord **username**.
+  Switch reports exactly that as `sender_name` (checked from ravel's first-message log), role `owner`.
+- Full run: 3 findings posted → 2 dismissed → `#fix-sqli-search` → fix → pytest 2 passed → ravel
+  ✅ FIX VERIFIED → owner typed `@sec-fixer approved` → merge `94d106f` names the owner as approver.
+  main then: 2 tests pass, scan 2 findings (B307, B506). `reset_demo.sh` restored the baseline.
+- `post_findings.py` now refuses to guess when several rooms match the name.
+
+**Learned**
+- Leaving a chat channel does not delete the Switch room; the room has to be deleted in Console.
+- A leftover `fix/*` branch makes sec-fixer's `git checkout -b` fail; run `reset_demo.sh` first.
+- Discord shows an @-mention of a linked account as the display name, while Switch identifies the
+  account by its username; the gate matched the username.
+
+**Next**
+- Dry runs 2 and 3 from a clean reset (3 in a row), `who calls` / `wiki` in a Discord room.
+- Owner: record with `docs/VIDEO_SCRIPT.md`, export `docs/demo.gif`, push (after the reset), submit.

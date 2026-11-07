@@ -17,7 +17,7 @@ Read in this order:
 
 ---
 
-## 1. Status (Nov 5)
+## 1. Status (Nov 7)
 
 | Phase | State |
 | --- | --- |
@@ -26,9 +26,9 @@ Read in this order:
 | 3 Switch running | ✅ Local server + Mattermost up, `sec-triager` answers in `#security-intake`. Template + agent instructions written (T6); import test is next |
 | 4 Ravel side of adapter | ✅ T1 + T1b done: all commands answer correctly with no Switch. Tests (T2) open |
 | 5 Switch protocol side | ✅ T3 done: `ravel` and `sec-scanner` registered; `check`, `who calls`, `attach wiki` answered live in Mattermost (~1.5 s). See `ravel_adapter/README.md` |
-| 6 Full workflow | ⬜ (T4, T5, T6, then dry runs) |
-| 7 Ask Ravel + Discord | ⬜ |
-| 8 README, blog, video | ⬜ (T8) |
+| 6 Full workflow | 🟡 T4, T5, T6 done. Full flow ran end to end on Mattermost (dry run 1) and on Discord (Nov 7). Phase 6 needs 3 clean runs in a row |
+| 7 Ask Ravel + Discord | 🟡 Discord connected, full flow ran there (T7). `who calls` / `wiki` in a Discord room still to confirm |
+| 8 README, blog, video | 🟡 Drafts written (T8). Still to do: demo GIF, video link, owner review |
 
 ## 2. Setup (15 min, no Switch needed)
 
@@ -69,8 +69,8 @@ Claim a task by telling the project owner and putting your name in the **Who** c
 | **T4** ✅ | `scripts/reset_demo.sh` + tag `demo-base`. It refuses to run if `main` has changes after the tag outside `demo-app/`; **re-tag after every non-demo commit:** `git tag -f demo-base main` (owner pushes the tag) | PLAN §7 Phase 6.3 | No | | Running it twice leaves `main` with 3 findings, no `fix/*` branches. **Ask the owner before the first run (`reset --hard`)** |
 | **T5** ✅ | `scripts/post_findings.py`: post the 3 findings as sec-scanner into `#security-intake` | PLAN §7 Phase 6.2 | Yes | | 3 messages appear, ~2 s apart |
 | **T6** | ✅ Written: `switch/security-room.template.yaml` (both agents' instructions, approval gate, 2 rooms). **Left:** import test | ARCHITECTURE §5, D8–D12; §4 below | Import: yes | Owner | Template imports and runs without errors (after T3 registers ravel + sec-scanner) |
-| **T7** | Connect Discord, run the flow there | PLAN §7 Phase 7 | Yes | Owner | Flow works in Discord |
-| **T8** | Drafts: `docs/BLOG.md`, `docs/VIDEO_SCRIPT.md`, README "How Switch is used" | CLAUDE.md Phase 8 | No | | Drafts reviewed by the owner |
+| **T7** ✅ | Connect Discord, run the flow there. Ran Nov 7: 2 dismissed, `#fix-sqli-search`, FIX VERIFIED, `@sec-fixer approved` merged | PLAN §7 Phase 7 | Yes | Owner | Flow works in Discord |
+| **T8** ✅ | Drafts: `docs/BLOG.md`, `docs/VIDEO_SCRIPT.md`, README "How Switch is used" | CLAUDE.md Phase 8 | No | | Drafts reviewed by the owner |
 | **T9** | Add an MIT `LICENSE` file to the Ravel repo (pyproject says MIT, the file is missing) | — | No | Owner | File on GitHub |
 
 Dependencies: T1 → T2 and T1b. T1 + T3 → live `@ravel`. T3 (register) → T5 and T6 import.

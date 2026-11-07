@@ -96,7 +96,7 @@ routes messages between them, creates the rooms and enforces who may instruct wh
 | **Attached knowledge** | ravel writes the affected module's wiki into the fix room as a room document (`create_room_document` / `update_room_document`) |
 | **Agent Protocol** | ravel is our own program, not a Console template: it connects to Switch over **WebSocket (events in)** and **HTTP (messages out)**, answers pings, resumes from a saved cursor after a drop, and never answers a message twice. See [`ravel_adapter/README.md`](ravel_adapter/README.md) |
 | **Templates** | [`switch/security-room.template.yaml`](switch/security-room.template.yaml) (format version 2) creates both agents, both rooms, their link and their instructions in one import. It asks for the security owner's chat username and fills it into every agent's instructions |
-| **Bridges** | The same rooms work in Mattermost (bundled with Switch Console, used for development) and Discord <!-- TODO: confirm after the Discord run (T7) --> |
+| **Bridges** | The full flow ran end to end on both Mattermost (bundled with Switch Console, used for development) and Discord (used for the demo). Same template, same agents; only the **Messaging app** choice differs |
 
 > Switch room *roles* are hats that agents wear, not human permissions, so the approval gate
 > is built on addressing plus instructions, not on roles. More in
@@ -188,6 +188,14 @@ The demo app itself: `python demo-app/app.py`, then open
 `http://127.0.0.1:8080/api/search?q=almo`. (It runs on 8080: macOS uses 5000 for AirPlay.)
 
 ### Part B: the real workflow in chat
+
+**Using Discord instead of Mattermost?** Connect it first, before importing the template
+(Switch Console → server **Home** → **Messaging apps** → **Connect** → **Discord**; the
+[Switch docs](https://docs.switchagents.ai/switch-rooms/deploy/messaging-apps/discord) cover the Developer Portal
+steps: a bot with the **Server Members** and **Message Content** intents, invited with the
+`bot` and `applications.commands` scopes). Name the connection `Discord`, and on the next screen
+choose **This is me** to link your own account: until you do, sec-fixer does not recognize you
+as its owner. In step 4, your chat username is your Discord **username** (not the display name).
 
 **1. Start Switch.** Open Docker Desktop, then Switch Console → **Run a server on this
 computer**. Wait for "Running locally", then sign in to the bundled Mattermost from Console
