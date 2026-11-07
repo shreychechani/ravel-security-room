@@ -260,15 +260,18 @@ sec-fixer merges and sec-triager writes the ledger.
 
 This resets `main` to the `demo-base` tag (3 findings), deletes local `fix/*` branches and
 re-runs the scan. It refuses to run if that would throw away anything outside `demo-app/`.
-Then, before posting findings again:
-1. Delete the old `fix-*` room in Switch Console, and its Discord channel if it is still listed.
-2. Run `python scripts/post_findings.py` again.
+Then, before posting findings again, start Switch fresh:
+1. In Switch Console delete the agents **sec-triager** and **sec-fixer** (keep **ravel** and
+   **sec-scanner**), and the rooms `security-intake`, `security-ledger` and `fix-*`, ticking
+   **Remove the channel too** for each.
+2. Import the template again (step 4 above) and check the kickoff names you.
+3. Run `python scripts/post_findings.py`.
 
-sec-triager reads the room history, and the history still holds the last run. The template's
-**EVERY SCAN IS NEW** rule tells it to triage each scan result from scratch anyway (a real scanner
-re-scans the code, and reachability can change). Without that rule it treats the re-sent findings as
-duplicates and puts the real one "on hold". For a clean-looking recording, import the template again
-to get empty channels.
+Why a fresh import every run: deleting only the fix room leaves sec-fixer's session registered in
+that deleted room, and Switch then refuses all of sec-fixer's posts ("Not connected to a room"), even
+after a Console restart. A fresh import gives new agents, empty channels and no leftover state. (The
+template's **EVERY SCAN IS NEW** rule also stops sec-triager from treating re-sent findings as
+duplicates of what it reads in the channel history.)
 
 ## Repo layout
 

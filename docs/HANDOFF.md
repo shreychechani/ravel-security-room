@@ -96,10 +96,12 @@ T1–T6 → Phase 6 dry runs (3 clean runs in a row from `reset_demo.sh`).
    sec-triager answers the kickoff **and names the security owner**: if it says
    `{security_owner}`, `Admin` or nothing, stop: the approval gate isn't wired.
 
-**Re-running the demo:** `./scripts/reset_demo.sh`, delete the old `fix-*` room in Console (and its
-Discord channel if it remains), then `python scripts/post_findings.py`. sec-triager reads the room history,
-so its instructions need the **EVERY SCAN IS NEW** rule (the template has it; an agent imported before
-that rule existed needs it added). `!reset` does not help: it clears the session, not the chat history.
+**Re-running the demo (each run, and before recording):** `./scripts/reset_demo.sh`, then in Console
+delete agents sec-triager + sec-fixer and rooms security-intake, security-ledger, fix-* (with **Remove the
+channel too**), re-import the template, then `python scripts/post_findings.py`. Deleting only the fix room
+leaves sec-fixer's session placed in a dead room: Console stores it in
+`agent-controller/servers/<server>/watchers/<agent-id>/placements.json`, Switch rejects the whole placement
+list, and every sec-fixer post fails with "Not connected to a room" (a Console restart does not clear it).
 
 **Run Ravel from its own checkout during demos.** sec-fixer switches branches in the repo
 folder, so start the adapter from a separate worktree of `main`, e.g.

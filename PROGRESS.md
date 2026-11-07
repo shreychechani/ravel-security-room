@@ -295,3 +295,14 @@ worked ("My session has been reset"), but the agent then re-read the room, saw i
 **Fix:** a rule in sec-triager's instructions, **EVERY SCAN IS NEW**, in the template and added to the live
 agent. Re-run then triaged all three at 12:05 and opened a new fix room. Also: a dirty working tree
 (an uncommitted edit) blocks sec-fixer's "git status must be clean" step, so commit before a run.
+
+**Then (12:10-12:35):** sec-fixer could not post at all: `400 Not connected to a room` right after a
+successful `connect_to_room`. Console's log: "Switch did not take this agent's session placements ... not a
+member of room 81783299" (run 1's deleted fix room). Console keeps each agent's session->room map in
+`agent-controller/servers/<server>/watchers/<agent-id>/placements.json` and states it whole; one dead room makes
+Switch reject all of it. `!reset`, killing the stale session process and restarting Console did not clear it.
+
+**Fix:** a fresh import per run (delete agents sec-triager + sec-fixer and all three rooms with their channels,
+re-import). Dry run 2 then ran clean from a fresh import (12:41-12:44): 3 checks, fix room + wiki, FIX VERIFIED,
+owner `@sec-fixer approved`, merge `3ab1c9b`, 2 tests pass, scan 2 findings. README step 6, HANDOFF and
+`reset_demo.py` now give the fresh-import procedure. Dry run 3 skipped by the owner's decision.
