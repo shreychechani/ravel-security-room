@@ -238,3 +238,25 @@
 
 **Next**
 - Owner: delete agents + rooms + old template, import v2, check the kickoff names the owner. Dry run 2.
+
+## Merge PRs #4–#8 + Phase 8 drafts (Nov 7)
+
+**Done**
+- Merged teammates' PRs #4–#8 (cross-platform `config.py`, `scan.py`, `reset_demo.py`,
+  `simulate_workflow.py`, `docs/SWITCH_SETUP.md`, `validate_template.py`). No conflicts.
+  135 adapter tests pass; scan = 3 findings; simulator 26/26.
+- Fix: `validate_template.py` checked the old v1 layout and failed on our v2 template. Rewritten for
+  v2 (typed resources, references, resource keys never in text).
+- Fix: `reset_demo.py` ignored its arguments, so `--help` ran a real reset (it deleted `fix/sqli-search`;
+  restored from `b931a94`). It now parses arguments first.
+- `docs/SWITCH_SETUP.md` §4–5 updated to the v2 import (field names, no room document, kickoff check).
+- Drafts: `README.md` rewrite (pitch, How Switch is used, Mermaid diagram, two-part quickstart,
+  walkthrough, limits), `docs/BLOG.md`, `docs/VIDEO_SCRIPT.md`.
+
+**Open**
+- README placeholders: demo GIF (`docs/demo.gif`), video link, Discord confirmation (after T7).
+- Ravel posts as "admin" in Mattermost (still asking switch-buddy).
+
+**Next**
+- Owner: push, then `git push -f origin demo-base`. Finish dry run 2, then dry run 3; T7 Discord; record.
+- Fresh-clone check of the README quickstart.

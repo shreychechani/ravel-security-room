@@ -68,18 +68,21 @@ This guide explains how to set up **Switch Console**, register the custom agents
    python scripts/validate_template.py
    ```
 2. In Switch Console:
-   - Navigate to **Templates** $\to$ **Import template**.
-   - Paste the contents of [`switch/security-room.template.yaml`](../switch/security-room.template.yaml).
-   - Click **Use Template**.
+   - Navigate to **Templates** $\to$ **Import template**, choose
+     [`switch/security-room.template.yaml`](../switch/security-room.template.yaml) (format version 2).
+   - Click **Use**.
 3. Fill in the parameters:
-   - **Security owner**: Your chat username (e.g. `admin` or your personal username, without `@`).
-   - **Folder**: The full path to your `ravel-security-room` repository clone.
-   - **Bridge**: Select `Mattermost` (or `Discord`).
+   - **Your chat username (no @)**: your username in the chat app (e.g. `user`), not your Switch
+     account name. This person is the security owner, the only one whose approval merges.
+   - **Folder of your ravel-security-room clone**: the box starts with the text `{repo_dir}`.
+     Clear it first, paste the full path, and check sec-fixer's **Directory** in the preview.
+   - **Bridge**: leave the default (Discord if connected, else Mattermost).
 4. Click **Create all**.
 5. Switch creates:
-   - `#security-intake` (with `sec-triager`, `ravel`, `sec-scanner`, you, and the `triage-playbook` document).
+   - `#security-intake` (with `sec-triager`, `ravel`, `sec-scanner` and you).
    - `#security-ledger` (audit log room with `sec-triager` and you).
-   - Auto-wakes `sec-triager` with the intake kickoff prompt.
+   - Wakes `sec-triager` with the kickoff. It must reply with the security owner's @-name;
+     if it says `{security_owner}`, `Admin` or nothing, the approval gate isn't wired.
 
 ---
 
@@ -91,9 +94,11 @@ python ravel_adapter/adapter.py
 ```
 Expected output:
 ```text
-[ravel] connected to ws://... cursor=...
-[ravel] listening for addressed events...
+connected · 2 rooms · cursor ...
 ```
+
+Run it from its own worktree of `main` during demos (sec-fixer switches branches in the repo
+folder); see the README, Part B step 3.
 
 ---
 
