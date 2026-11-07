@@ -175,6 +175,13 @@ Fixing it took three tries, and each one taught us something about Switch:
 The lesson: **a security gate has to show who it trusts.** "Ready, security owner is
 @user" in the kickoff costs one line and catches the whole class of bug.
 
+It carried over to Discord. There, Switch matches the approver by the account's **username**
+(`sender_name`), while an @-mention of the same account is shown as its *display name*, so
+sec-fixer's "please review" ping showed a different-looking name than the one the gate checks.
+We confirmed it from ravel's first-message log before the run, and the merge commit names
+the right account: "approved by @<username>". Linking your own Discord account in Console
+("This is me") is the step that makes Switch treat you as sec-fixer's owner at all.
+
 A second, smaller one from the same run: `@ravel verify fix/sqli-search search` came back
 ⚪ UNKNOWN. Ravel compared the fix branch against "the current checkout" as the before
 state, but sec-fixer works in the same clone and had left the fix branch checked out, so

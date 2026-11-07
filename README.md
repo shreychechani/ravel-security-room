@@ -278,7 +278,7 @@ In Switch, delete the old `fix-*` room before the next run.
 | `docs/ARCHITECTURE.md` | How it works and why (decisions log) |
 | `docs/SWITCH_SETUP.md` | Longer Switch setup guide |
 
-Tests: `pytest ravel_adapter/tests -q` (135 tests, no Switch needed).
+Tests: `pytest ravel_adapter/tests -q` (136 tests, no Switch needed).
 
 ## Limits and next steps
 
