@@ -34,16 +34,33 @@ def get(key, default=""):
 
 def path_setting(key, default):
     """A path from settings; relative paths are relative to the repo root."""
-    return (ROOT / get(key, default)).resolve()
+    target = ROOT / get(key, default)
+    try:
+        return target.resolve()
+    except (OSError, RuntimeError, PermissionError):
+        return target.absolute()
 
 
 def local_switch_url():
-    """The API address of a server Switch Console runs on this Mac (random port, ports.json)."""
-    ports = (Path.home() / "Library/Application Support/switchdash/local-switch-server/ports.json")
-    try:
-        return f"http://127.0.0.1:{json.loads(ports.read_text())['api']}"
-    except (OSError, ValueError, KeyError):
-        return "http://127.0.0.1:8000"
+    """The API address of a server Switch Console runs locally (random port, ports.json)."""
+    candidates = [
+        # macOS
+        Path.home() / "Library/Application Support/switchdash/local-switch-server/ports.json",
+        # Windows APPDATA / LOCALAPPDATA
+        Path(os.environ.get("APPDATA", "")) / "switchdash/local-switch-server/ports.json" if os.environ.get("APPDATA") else None,
+        Path(os.environ.get("LOCALAPPDATA", "")) / "switchdash/local-switch-server/ports.json" if os.environ.get("LOCALAPPDATA") else None,
+        # Linux
+        Path.home() / ".config/switchdash/local-switch-server/ports.json",
+    ]
+    for candidate in candidates:
+        if candidate and candidate.exists():
+            try:
+                data = json.loads(candidate.read_text())
+                if "api" in data:
+                    return f"http://127.0.0.1:{data['api']}"
+            except (OSError, ValueError, KeyError):
+                pass
+    return "http://127.0.0.1:8000"
 
 
 # Switch (used by the protocol side)
