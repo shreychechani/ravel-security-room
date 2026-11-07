@@ -100,6 +100,18 @@ class TestPostFindingsLoadingAndPosting:
             get_room_id("http://fake", "agent-1", "key", "security-intake")
 
     @patch("requests.post")
+    def test_get_room_id_refuses_to_guess_between_apps(self, mock_post):
+        rooms = {"result": [
+            {"room_id": "room-m", "name": "Mattermost: security-intake"},
+            {"room_id": "room-d", "name": "Discord: security-intake"},
+        ]}
+        mock_post.return_value = MagicMock(status_code=200, json=lambda: rooms)
+        with pytest.raises(ValueError, match="Several rooms match"):
+            get_room_id("http://fake", "agent-1", "key", "security-intake")
+        # The full name picks one
+        assert get_room_id("http://fake", "agent-1", "key", "Discord: security-intake") == "room-d"
+
+    @patch("requests.post")
     def test_post_message_sends_payload(self, mock_post):
         mock_post.return_value = MagicMock(status_code=200)
         post_message("http://fake", "agent-1", "key", "room-123", "Hello room")

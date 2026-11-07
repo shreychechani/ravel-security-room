@@ -112,11 +112,15 @@ def get_room_id(base_url, agent_id, api_key, room_name="security-intake"):
                          headers=headers, json={}, timeout=15)
     resp.raise_for_status()
     rooms = resp.json().get("result") or []
-    for r in rooms:
-        name = r.get("name") or r.get("display_name") or ""
-        if room_matches(name, room_name):
-            return r.get("id") or r.get("room_id")
-    raise ValueError(f"Room '{room_name}' not found among rooms: {[r.get('name') for r in rooms]}")
+    matches = [r for r in rooms if room_matches(r.get("name") or r.get("display_name") or "", room_name)]
+    if not matches:
+        raise ValueError(f"Room '{room_name}' not found among rooms: {[r.get('name') for r in rooms]}")
+    if len(matches) > 1:
+        # e.g. an old Mattermost room and the new Discord one: never guess which
+        names = [r.get("name") or r.get("display_name") for r in matches]
+        raise ValueError(f"Several rooms match '{room_name}': {names}. "
+                         f"Delete the old one, or pass its full name: --room \"{names[-1]}\"")
+    return matches[0].get("id") or matches[0].get("room_id")
 
 
 def post_message(base_url, agent_id, api_key, room_id, content):
