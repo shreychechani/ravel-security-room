@@ -21,7 +21,7 @@ class TestTemplateValidation:
 
     def test_invalid_yaml_reports_error(self, tmp_path):
         bad_yaml = tmp_path / "bad.yaml"
-        bad_yaml.write_text("version: 1\nparams:\n  - incomplete: [")
+        bad_yaml.write_text("version: 2\nparams:\n  - incomplete: [")
         ok, errors = validate_template(bad_yaml)
         assert ok is False
         assert any("syntax" in e.lower() for e in errors)
@@ -29,15 +29,57 @@ class TestTemplateValidation:
     def test_missing_required_agent_fields(self, tmp_path):
         bad = tmp_path / "bad_agent.yaml"
         bad.write_text("""
-version: 1
+version: 2
 params: {}
-group: {name: "Test"}
-rooms: [{name: "test", bridge: "discord"}]
-agents:
-  - name: test-agent
+resources:
+  test_room: {type: room, name: test, bridge: Discord}
+  test_agent:
+    type: agent
+    name: test-agent
     provider: claude
-    # missing location, directory, instructions
+    # missing directory, instructions
 """)
         ok, errors = validate_template(bad)
         assert ok is False
         assert any("missing required field" in e for e in errors)
+
+    def test_v1_template_is_rejected(self, tmp_path):
+        old = tmp_path / "old.yaml"
+        old.write_text("version: 1\nparams: {}\nagents: []\nrooms: []\n")
+        ok, errors = validate_template(old)
+        assert ok is False
+        assert any("version: 2" in e for e in errors)
+
+    def test_undeclared_placeholder(self, tmp_path):
+        bad = tmp_path / "placeholder.yaml"
+        bad.write_text("""
+version: 2
+params: {}
+resources:
+  a_room: {type: room, name: r, bridge: "{bridge}"}
+""")
+        ok, errors = validate_template(bad)
+        assert ok is False
+        assert any("{bridge}" in e for e in errors)
+
+    def test_resource_key_in_text_is_caught(self, tmp_path):
+        bad = tmp_path / "key_in_text.yaml"
+        bad.write_text("""
+version: 2
+params: {}
+resources:
+  intake:
+    type: room
+    name: security-intake
+    bridge: Discord
+    instructions: Every finding lands in intake.
+  triager:
+    type: agent
+    name: sec-triager
+    provider: claude
+    directory: /tmp
+    instructions: You triage findings.
+""")
+        ok, errors = validate_template(bad)
+        assert ok is False
+        assert any("'intake' appears in intake.instructions" in e for e in errors)
