@@ -9,10 +9,9 @@ AI agents triage them with call-graph proof from [Ravel](https://github.com/shre
 fix the one that matters on a branch, prove the fix, and merge only after the security
 owner types `@sec-fixer approved`.
 
-<!-- TODO: demo GIF -->
-![Demo](docs/demo.gif)
+[![Demo: click to watch the 3-minute video](docs/demo.gif)](https://www.youtube.com/watch?v=6GzCkDI_PWw)
 
-▶️ **3-minute demo video:** <!-- TODO: link --> *(link coming)*
+▶️ **3-minute demo video:** https://www.youtube.com/watch?v=6GzCkDI_PWw
 
 ```
 3 scanner findings in

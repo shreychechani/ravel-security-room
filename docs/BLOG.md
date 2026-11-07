@@ -2,7 +2,7 @@
 
 *Draft for the Flip the Switch hackathon (WeMakeDevs × DevTools Academy).*
 
-<!-- TODO: cover image / demo GIF -->
+[![Ravel Security Room demo](demo.gif)](https://www.youtube.com/watch?v=6GzCkDI_PWw)
 
 ## The problem we picked
 
@@ -202,4 +202,4 @@ code that judges it.
 - Repo: https://github.com/shreychechani/ravel-security-room
 - Ravel: https://github.com/shreychechani/Ravel
 - Switch: https://github.com/sandbox-quantum/switch · docs: https://docs.switchagents.ai
-- Demo video: <!-- TODO: link -->
+- Demo video: https://www.youtube.com/watch?v=6GzCkDI_PWw
