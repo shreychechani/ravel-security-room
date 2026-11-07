@@ -281,3 +281,13 @@
 **Next**
 - Dry runs 2 and 3 from a clean reset (3 in a row), `who calls` / `wiki` in a Discord room.
 - Owner: record with `docs/VIDEO_SCRIPT.md`, export `docs/demo.gif`, push (after the reset), submit.
+
+## Dry run 2 on Discord (Nov 7): agents remember the last run
+
+**Broke:** after `reset_demo.sh` and re-posting the findings, sec-triager did not triage: it remembered
+the previous run ("B307 and B506 already dismissed today", "#fix-sqli-search no longer shows", B608
+"on hold until the security owner answers") and asked the owner whether to re-triage. ravel got no requests.
+
+**Fix:** Switch's `!reset @agent` room command clears an agent's context. Before each re-run:
+delete the old `fix-*` room, run `!reset @sec-triager` and `!reset @sec-fixer` in `#security-intake`,
+then post the findings. `reset_demo.py` now prints this reminder; README step 6 and HANDOFF say it.

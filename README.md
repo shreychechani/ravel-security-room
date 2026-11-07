@@ -260,7 +260,12 @@ sec-fixer merges and sec-triager writes the ledger.
 
 This resets `main` to the `demo-base` tag (3 findings), deletes local `fix/*` branches and
 re-runs the scan. It refuses to run if that would throw away anything outside `demo-app/`.
-In Switch, delete the old `fix-*` room before the next run.
+Then, in Switch and the chat, before posting findings again:
+1. Delete the old `fix-*` room in Switch Console.
+2. In `#security-intake`, type `!reset @sec-triager` and then `!reset @sec-fixer`. The agents' sessions
+   carry over between runs: without this, sec-triager remembers the last run, treats the re-sent findings
+   as duplicates and puts the real one "on hold".
+3. Run `python scripts/post_findings.py` again.
 
 ## Repo layout
 
