@@ -260,12 +260,15 @@ sec-fixer merges and sec-triager writes the ledger.
 
 This resets `main` to the `demo-base` tag (3 findings), deletes local `fix/*` branches and
 re-runs the scan. It refuses to run if that would throw away anything outside `demo-app/`.
-Then, in Switch and the chat, before posting findings again:
-1. Delete the old `fix-*` room in Switch Console.
-2. In `#security-intake`, type `!reset @sec-triager` and then `!reset @sec-fixer`. The agents' sessions
-   carry over between runs: without this, sec-triager remembers the last run, treats the re-sent findings
-   as duplicates and puts the real one "on hold".
-3. Run `python scripts/post_findings.py` again.
+Then, before posting findings again:
+1. Delete the old `fix-*` room in Switch Console, and its Discord channel if it is still listed.
+2. Run `python scripts/post_findings.py` again.
+
+sec-triager reads the room history, and the history still holds the last run. The template's
+**EVERY SCAN IS NEW** rule tells it to triage each scan result from scratch anyway (a real scanner
+re-scans the code, and reachability can change). Without that rule it treats the re-sent findings as
+duplicates and puts the real one "on hold". For a clean-looking recording, import the template again
+to get empty channels.
 
 ## Repo layout
 

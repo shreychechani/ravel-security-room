@@ -282,12 +282,16 @@
 - Dry runs 2 and 3 from a clean reset (3 in a row), `who calls` / `wiki` in a Discord room.
 - Owner: record with `docs/VIDEO_SCRIPT.md`, export `docs/demo.gif`, push (after the reset), submit.
 
-## Dry run 2 on Discord (Nov 7): agents remember the last run
+## Dry run 2 on Discord (Nov 7): sec-triager reads the room history
 
-**Broke:** after `reset_demo.sh` and re-posting the findings, sec-triager did not triage: it remembered
-the previous run ("B307 and B506 already dismissed today", "#fix-sqli-search no longer shows", B608
-"on hold until the security owner answers") and asked the owner whether to re-triage. ravel got no requests.
+**Broke:** after `reset_demo.sh` and re-posting the findings, sec-triager did not triage: it said B307 and
+B506 were "already dismissed today", that `#fix-sqli-search` was gone, and put B608 "on hold". ravel got no requests.
 
-**Fix:** Switch's `!reset @agent` room command clears an agent's context. Before each re-run:
-delete the old `fix-*` room, run `!reset @sec-triager` and `!reset @sec-fixer` in `#security-intake`,
-then post the findings. `reset_demo.py` now prints this reminder; README step 6 and HANDOFF say it.
+**Cause (checked with `read_context` on the intake room):** not session memory. `!reset @sec-triager`
+worked ("My session has been reset"), but the agent then re-read the room, saw its own earlier
+"Dismissed" lines and "Opened #fix-sqli-search", and treated the re-sent findings as duplicates.
+(`!reset @sec-fixer` failed: sec-fixer is only in the fix room, which was deleted.)
+
+**Fix:** a rule in sec-triager's instructions, **EVERY SCAN IS NEW**, in the template and added to the live
+agent. Re-run then triaged all three at 12:05 and opened a new fix room. Also: a dirty working tree
+(an uncommitted edit) blocks sec-fixer's "git status must be clean" step, so commit before a run.

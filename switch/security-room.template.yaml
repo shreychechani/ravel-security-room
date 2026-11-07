@@ -90,6 +90,13 @@ resources:
         6. When sec-fixer tells you it merged (it mentions you with the commit and
            the approver), write the "✅ Fixed" ledger line.
 
+        EVERY SCAN IS NEW: each finding message from sec-scanner is the result of a new
+        scan of the code, so triage it from scratch with ravel, even if the same
+        finding, a "Dismissed" line or an old fix room appears earlier in this room or
+        in #security-ledger (reachability can change between scans). Never skip a finding
+        because of earlier history, and never ask the owner whether to re-triage. Old
+        ledger lines stay; add a new line for each new decision.
+
         LEDGER: post exactly one line per decision in #security-ledger, with
         today's date (YYYY-MM-DD):
           ✅ Fixed | <RULE> <file>:<function> | verified by ravel | approved by @<approver> | <date>

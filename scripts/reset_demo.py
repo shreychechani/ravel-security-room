@@ -175,8 +175,9 @@ def reset_demo():
         error(f"Error: Expected exactly 3 findings, but found {count}.")
 
     print("==> Demo reset complete! Baseline confirmed: 3 findings on main.")
-    print("Before posting findings again, in chat: delete the old fix-* room in Switch Console, then in\n"
-          "#security-intake run  !reset @sec-triager  and  !reset @sec-fixer  (the agents remember the last run).")
+    print("Before posting findings again: delete the old fix-* room in Switch Console (and its Discord\n"
+          "channel if it is still listed). sec-triager reads the room history, so its instructions must\n"
+          "include the EVERY SCAN IS NEW rule (the template has it).")
 
 
 if __name__ == "__main__":
